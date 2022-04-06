@@ -1,16 +1,21 @@
-# Ministry of Justice Template Repository
+## Usage
 
-Use this template to [create a repository] with the default initial files for a Ministry of Justice Github repository, including:
+```hcl
 
-* The correct LICENSE
-* Github actions
-* .gitignore file
+module "lb-with-access-logs-enabled" {
 
-Once you have created your repository, please:
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-loadbalancer"
 
-* Edit the copy of this README.md file to document your project
-* Grant permissions to the appropriate MoJ teams
-* Setup branch protection
-* Add a Dependabot file for [automated pull requests for package updates](https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/enabling-and-disabling-dependabot-version-updates#enabling-dependabot-version-updates)
+  bucket_prefix    = local.application_data.accounts[local.environment].bucket_prefix
+  tags             = local.tags
+  application_name = local.application_name
 
-[create a repository]: https://github.com/ministryofjustice/template-repository/generate
+}
+
+```
+<!--- BEGIN_TF_DOCS --->
+
+<!--- END_TF_DOCS --->
+
+## Looking for issues?
+If you're looking to raise an issue with this module, please create a new issue in the [Modernisation Platform repository](https://github.com/ministryofjustice/modernisation-platform/issues).
