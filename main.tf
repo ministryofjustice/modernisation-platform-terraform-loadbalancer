@@ -4,15 +4,15 @@ data "aws_vpc" "shared" {
   }
 }
 
-data "aws_subnets" "shared-public" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.shared.id]
-  }
-  tags = {
-    Name = "${var.public_subnets}-public*"
-  }
-}
+# data "aws_subnets" "shared-public" {
+#   filter {
+#     name   = "vpc-id"
+#     values = [data.aws_vpc.shared.id]
+#   }
+#   tags = {
+#     Name = "${var.public_subnets}-public*"
+#   }
+# }
 
 # Terraform module which creates S3 Bucket resources for Load Balancer Access Logs on AWS.
 
@@ -22,7 +22,7 @@ module "s3-bucket" {
   providers = {
     aws.bucket-replication = aws.bucket-replication
   }
-  bucket_prefix       = "${var.bucket_prefix}-lb-access-logs"
+  bucket_prefix       = "${var.application_name}-lb-access-logs"
   bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json]
   replication_enabled = false
   versioning_enabled  = true
@@ -95,9 +95,7 @@ resource "aws_lb" "loadbalancer" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.lb.id]
-  subnets            = [var.public_subnets]
-  # [for subnet in aws_subnet.public : subnet.id]
-
+  subnets            = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
   enable_deletion_protection = true
 
   access_logs {
@@ -106,9 +104,12 @@ resource "aws_lb" "loadbalancer" {
     enabled = true
   }
 
-  tags = {
-    Environment = "test"
-  }
+  tags = merge(
+    var.tags,
+    {
+      Name = "lb-${var.application_name}"
+    },
+  )
 }
 
 resource "aws_security_group" "lb" {
@@ -127,4 +128,25 @@ resource "aws_security_group" "lb" {
       security_groups = lookup(ingress.value, "security_groups", null)
     }
   }
+}
+
+data "template_file" "lb-access-logs" {
+  template = file("${path.module}/templates/create_table.sql")
+
+  vars = {
+    bucket     = module.s3-bucket.bucket.id
+    account_id = var.account_number
+    region     = var.region
+  }
+}
+
+resource "aws_athena_database" "lb-access-logs" {
+  name   = "loadbalancer_access_logs"
+  bucket = module.s3-bucket.bucket.id
+}
+
+resource "aws_athena_named_query" "main" {
+  name     = "${var.application_name}-create-table"
+  database = "${aws_athena_database.lb-access-logs.name}"
+  query    = "${data.template_file.lb-access-logs.rendered}"
 }

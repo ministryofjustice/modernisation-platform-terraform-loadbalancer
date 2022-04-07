@@ -1,7 +1,3 @@
-variable "bucket_prefix" {
-  type        = string
-  description = "Prefix for s3 bucket that will store access logs"
-}
 variable "account_number" {
   type        = string
   description = "Account number of current environment"
@@ -15,7 +11,7 @@ variable "application_name" {
   description = "Name of application"
 }
 variable "public_subnets" {
-  type        = string
+  type        = list(string)
   description = "Public subnets"
 }
 variable "loadbalancer_ingress_rules" {
@@ -32,4 +28,8 @@ variable "loadbalancer_ingress_rules" {
 variable "vpc_all" {
   type        = string
   description = "The full name of the VPC (including environment) used to create resources"
+}
+variable "region" {
+  type        = string
+  description = "AWS Region where resources are to be created"
 }
