@@ -23,7 +23,7 @@ module "s3-bucket" {
     aws.bucket-replication = aws.bucket-replication
   }
   bucket_prefix       = "${var.application_name}-lb-access-logs"
-  bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json]
+  bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json, data.aws_iam_policy_document.bucket_policy2.json, data.aws_iam_policy_document.bucket_policy3.json]
   replication_enabled = false
   versioning_enabled  = true
   lifecycle_rule = [
@@ -74,21 +74,48 @@ data "aws_iam_policy_document" "bucket_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "s3:PutObject"
+      "s3:PutObject",
+      "s3:GetObject",
+      "kms:*"
     ]
-    resources = ["${module.s3-bucket.bucket.arn}/*"]
+    resources = ["${module.s3-bucket.bucket.arn}","${module.s3-bucket.bucket.arn}/*"]
     principals {
       type        = "AWS"
-      identifiers = [data.aws_elb_service_account.default.arn]
+      identifiers = ["arn:aws:iam::${var.account_number}:root"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "bucket_policy2" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:*",
+    ]
+    resources = ["${module.s3-bucket.bucket.arn}","${module.s3-bucket.bucket.arn}/performance-hub-create-table/*"]
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${var.account_number}:root"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "bucket_policy3" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:*",
+      "kms:*"
+    ]
+    resources = ["${module.s3-bucket.bucket.arn}","${module.s3-bucket.bucket.arn}/performance-hub-create-table/*"]
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::938841708445:role/aws-reserved/sso.amazonaws.com/eu-west-2/AWSReservedSSO_AdministratorAccess_cd244d6cc5f9c844"]
     }
   }
 }
 
 data "aws_elb_service_account" "default" {}
-
-# https://www.terraform.io/docs/providers/aws/d/region.html
-# Get the region of the callee
-data "aws_region" "current" {}
 
 resource "aws_lb" "loadbalancer" {
   name               = "${var.application_name}-lb"

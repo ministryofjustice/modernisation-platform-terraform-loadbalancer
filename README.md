@@ -12,6 +12,10 @@ module "lb-with-access-logs-enabled" {
 
 }
 
+Go to the Athena console and click on Saved Queries https://console.aws.amazon.com/athena/saved-queries/home
+Click the new saved query that is named <custom_name>-create-table and Run it. You only have to do it once.
+That's all, try a query select * from lb_logs limit 100;
+
 ```
 <!--- BEGIN_TF_DOCS --->
 
