@@ -4,20 +4,6 @@ data "aws_vpc" "shared" {
   }
 }
 
-data "aws_kms_key" "s3" {
-  key_id = "arn:aws:kms:eu-west-2:938841708445:key/77b5bfe6-f106-4052-9d26-a5bfefd2dff4"
-}
-
-# data "aws_subnets" "shared-public" {
-#   filter {
-#     name   = "vpc-id"
-#     values = [data.aws_vpc.shared.id]
-#   }
-#   tags = {
-#     Name = "${var.public_subnets}-public*"
-#   }
-# }
-
 # Terraform module which creates S3 Bucket resources for Load Balancer Access Logs on AWS.
 
 module "s3-bucket" {
