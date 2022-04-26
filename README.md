@@ -30,9 +30,10 @@ locals {
 
 Loadbalancer target groups and listeners need to be created separately.
 
-To run queries in Athen do the following:
+To run queries in Athena do the following:
 Go to the Athena console and click on Saved Queries https://console.aws.amazon.com/athena/saved-queries/home
-Click the new saved query that is named <custom_name>-create-table and Run it. You only have to do it once.
+
+Click the new saved query that is named `<custom_name>`-create-table and Run it. You only have to do it once.
 
 Try a query like `select * from lb_logs limit 100;`
 
