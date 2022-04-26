@@ -29,7 +29,15 @@ variable "vpc_all" {
   type        = string
   description = "The full name of the VPC (including environment) used to create resources"
 }
+variable "enable_deletion_protection" {
+  type        = bool
+  description = "If true, deletion of the load balancer will be disabled via the AWS API. This will prevent Terraform from deleting the load balancer."
+}
 variable "region" {
   type        = string
   description = "AWS Region where resources are to be created"
+}
+variable "idle_timeout" {
+  type        = string
+  description = "The time in seconds that the connection is allowed to be idle."
 }

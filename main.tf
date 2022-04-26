@@ -4,6 +4,10 @@ data "aws_vpc" "shared" {
   }
 }
 
+data "aws_kms_key" "s3" {
+  key_id = "arn:aws:kms:eu-west-2:938841708445:key/77b5bfe6-f106-4052-9d26-a5bfefd2dff4"
+}
+
 # data "aws_subnets" "shared-public" {
 #   filter {
 #     name   = "vpc-id"
@@ -23,7 +27,7 @@ module "s3-bucket" {
     aws.bucket-replication = aws.bucket-replication
   }
   bucket_prefix       = "${var.application_name}-lb-access-logs"
-  bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json, data.aws_iam_policy_document.bucket_policy2.json, data.aws_iam_policy_document.bucket_policy3.json]
+  bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json]
   replication_enabled = false
   versioning_enabled  = true
   lifecycle_rule = [
@@ -74,48 +78,61 @@ data "aws_iam_policy_document" "bucket_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "s3:PutObject",
-      "s3:GetObject",
-      "kms:*"
+      "s3:PutObject"
     ]
-    resources = ["${module.s3-bucket.bucket.arn}","${module.s3-bucket.bucket.arn}/*"]
+    resources = ["${module.s3-bucket.bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${var.account_number}:root"]
+      identifiers = [data.aws_elb_service_account.default.arn]
     }
   }
-}
-
-data "aws_iam_policy_document" "bucket_policy2" {
   statement {
-    effect = "Allow"
-    actions = [
-      "s3:*",
-    ]
-    resources = ["${module.s3-bucket.bucket.arn}","${module.s3-bucket.bucket.arn}/performance-hub-create-table/*"]
+    sid = "AWSLogDeliveryWrite"
+
     principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::${var.account_number}:root"]
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
+
+    actions = [
+      "s3:PutObject"
+    ]
+
+    resources = ["${module.s3-bucket.bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
+
+      values = [
+        "bucket-owner-full-control"
+      ]
     }
   }
-}
 
-data "aws_iam_policy_document" "bucket_policy3" {
   statement {
-    effect = "Allow"
-    actions = [
-      "s3:*",
-      "kms:*"
-    ]
-    resources = ["${module.s3-bucket.bucket.arn}","${module.s3-bucket.bucket.arn}/performance-hub-create-table/*"]
+    sid = "AWSLogDeliveryAclCheck"
+
     principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::938841708445:role/aws-reserved/sso.amazonaws.com/eu-west-2/AWSReservedSSO_AdministratorAccess_cd244d6cc5f9c844"]
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
     }
+
+    actions = [
+      "s3:GetBucketAcl"
+    ]
+
+    resources = [
+      "${module.s3-bucket.bucket.arn}"
+    ]
   }
 }
 
 data "aws_elb_service_account" "default" {}
+
+# https://www.terraform.io/docs/providers/aws/d/region.html
+# Get the region of the callee
+data "aws_region" "current" {}
 
 resource "aws_lb" "loadbalancer" {
   name               = "${var.application_name}-lb"
@@ -123,7 +140,8 @@ resource "aws_lb" "loadbalancer" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.lb.id]
   subnets            = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
-  enable_deletion_protection = true
+  enable_deletion_protection = var.enable_deletion_protection
+  idle_timeout       = var.idle_timeout
 
   access_logs {
     bucket  = module.s3-bucket.bucket.id
@@ -176,4 +194,20 @@ resource "aws_athena_named_query" "main" {
   name     = "${var.application_name}-create-table"
   database = "${aws_athena_database.lb-access-logs.name}"
   query    = "${data.template_file.lb-access-logs.rendered}"
+}
+
+resource "aws_athena_workgroup" "lb-access-logs" {
+  name = "${var.application_name}-lb-access-logs"
+
+  configuration {
+    enforce_workgroup_configuration    = true
+    publish_cloudwatch_metrics_enabled = true
+
+    result_configuration {
+      output_location = "s3://${module.s3-bucket.bucket.id}/output/"
+      encryption_configuration {
+        encryption_option = "SSE_S3"
+      }
+    }
+  }
 }
