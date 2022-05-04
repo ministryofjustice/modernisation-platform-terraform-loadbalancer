@@ -3,7 +3,7 @@
 
 A Terraform module that creates application loadbalancer (with loadbalancer security groups) in AWS with logging enabled, s3 to store logs and Athena DB to query logs.
 
-A locals for the loadbalancer security group is necessary to satisfy the `loadbalancer_ingress_rules` variable and also creates specific security group rules for the loadbalancer security group. Below is an example:
+A locals for the loadbalancer security group is necessary to satisfy the `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables and creates security group rules for the loadbalancer security group. Below is an example:
 
 ```
 locals {
