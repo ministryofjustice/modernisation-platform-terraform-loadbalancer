@@ -4,6 +4,10 @@ data "aws_vpc" "shared" {
   }
 }
 
+data "aws_s3_bucket" "existing_bucket_name" {
+  bucket = var.existing_bucket_name
+}
+
 # Terraform module which creates S3 Bucket resources for Load Balancer Access Logs on AWS.
 
 module "s3-bucket" {
@@ -66,7 +70,7 @@ data "aws_iam_policy_document" "bucket_policy" {
     actions = [
       "s3:PutObject"
     ]
-    resources = ["${module.s3-bucket.bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    resources = [var.existing_bucket_name != "" ? "${data.aws_s3_bucket.existing_bucket_name.arn}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket.bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
     principals {
       type        = "AWS"
       identifiers = [data.aws_elb_service_account.default.arn]
@@ -84,7 +88,7 @@ data "aws_iam_policy_document" "bucket_policy" {
       "s3:PutObject"
     ]
 
-    resources = ["${module.s3-bucket.bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    resources = [var.existing_bucket_name != "" ? "${data.aws_s3_bucket.existing_bucket_name.arn}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket.bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
 
     condition {
       test     = "StringEquals"
@@ -109,7 +113,7 @@ data "aws_iam_policy_document" "bucket_policy" {
     ]
 
     resources = [
-      "${module.s3-bucket.bucket.arn}"
+      var.existing_bucket_name != "" ? "${data.aws_s3_bucket.existing_bucket_name.arn}" : "${module.s3-bucket.bucket.arn}"
     ]
   }
 }
@@ -130,7 +134,7 @@ resource "aws_lb" "loadbalancer" {
   idle_timeout       = var.idle_timeout
 
   access_logs {
-    bucket  = module.s3-bucket.bucket.id
+    bucket  = var.existing_bucket_name != "" ? "${data.aws_s3_bucket.existing_bucket_name.id}" : "${module.s3-bucket.bucket.id}"
     prefix  = "${var.application_name}"
     enabled = true
   }
@@ -159,13 +163,25 @@ resource "aws_security_group" "lb" {
       security_groups = lookup(ingress.value, "security_groups", null)
     }
   }
+
+  dynamic "egress" {
+    for_each = var.loadbalancer_egress_rules
+    content {
+      description     = lookup(egress.value, "description", null)
+      from_port       = lookup(egress.value, "from_port", null)
+      to_port         = lookup(egress.value, "to_port", null)
+      protocol        = lookup(egress.value, "protocol", null)
+      cidr_blocks     = lookup(egress.value, "cidr_blocks", null)
+      security_groups = lookup(egress.value, "security_groups", null)
+    }
+  }
 }
 
 data "template_file" "lb-access-logs" {
   template = file("${path.module}/templates/create_table.sql")
 
   vars = {
-    bucket     = module.s3-bucket.bucket.id
+    bucket     = var.existing_bucket_name != "" ? "${data.aws_s3_bucket.existing_bucket_name.id}" : "${module.s3-bucket.bucket.id}"
     account_id = var.account_number
     region     = var.region
   }
@@ -173,7 +189,7 @@ data "template_file" "lb-access-logs" {
 
 resource "aws_athena_database" "lb-access-logs" {
   name   = "loadbalancer_access_logs"
-  bucket = module.s3-bucket.bucket.id
+  bucket = var.existing_bucket_name != "" ? "${data.aws_s3_bucket.existing_bucket_name.id}" : "${module.s3-bucket.bucket.id}"
 }
 
 resource "aws_athena_named_query" "main" {
@@ -190,7 +206,7 @@ resource "aws_athena_workgroup" "lb-access-logs" {
     publish_cloudwatch_metrics_enabled = true
 
     result_configuration {
-      output_location = "s3://${module.s3-bucket.bucket.id}/output/"
+      output_location = var.existing_bucket_name != "" ? "s3://${data.aws_s3_bucket.existing_bucket_name.id}/output/" : "s3://${module.s3-bucket.bucket.id}/output/"
       encryption_configuration {
         encryption_option = "SSE_S3"
       }

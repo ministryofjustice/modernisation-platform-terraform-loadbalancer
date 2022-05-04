@@ -13,7 +13,7 @@ locals {
       from_port       = 8080
       to_port         = 8080
       protocol        = "tcp"
-      cidr_blocks     = [0.0.0.0/0]
+      cidr_blocks     = []
       security_groups = []
     },
     "cluster_ec2_bastion_ingress" = {
@@ -22,7 +22,18 @@ locals {
       to_port         = 3389
       protocol        = "tcp"
       cidr_blocks     = []
-      security_groups = [module.bastion_linux.bastion_security_group]
+      security_groups = []
+    }
+  }
+
+  loadbalancer_egress_rules = {
+    "cluster_ec2_lb_egress" = {
+      description     = "Cluster EC2 loadbalancer egress rule"
+      from_port       = 443
+      to_port         = 443
+      protocol        = "tcp"
+      cidr_blocks     = ["0.0.0.0/0"]
+      security_groups = []
     }
   }
 }
