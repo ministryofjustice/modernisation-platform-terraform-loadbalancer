@@ -3,6 +3,8 @@
 
 A Terraform module that creates application loadbalancer (with loadbalancer security groups) in AWS with logging enabled, s3 to store logs and Athena DB to query logs.
 
+An s3 bucket name can be provided in the module by adding the `existing_bucket_name` variable and adding the bucket name. Otherwise, if no bucket exists one will be created and no variable needs to be set in the module.
+
 A locals for the loadbalancer security group is necessary to satisfy the `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables and creates security group rules for the loadbalancer security group. Below is an example:
 
 ```
