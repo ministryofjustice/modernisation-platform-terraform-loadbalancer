@@ -1,5 +1,5 @@
 # output "bucketArn" {
-#   value       = module.s3.bucket.arn
+#   value       = module.lb_access_logs_enabled.arn
 #   description = "Bucket ARN"
 # }
 # output "bucket_id" {
