@@ -1,1 +1,13 @@
 .env
+.terraform
+*.tfstate*
+.DS_Store
+tmp/
+.vscode/
+.terraform.lock.hcl
+*.tsv
+.idea/
+.tfsec/
+.tfsec/*
+test/unit-test/.terraform.*
+test/unit-test/terraform.*
