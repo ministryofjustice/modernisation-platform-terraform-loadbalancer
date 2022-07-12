@@ -70,5 +70,5 @@ module "lb_access_logs_enabled" {
   region                     = "eu-west-2"
   enable_deletion_protection = false
   idle_timeout               = 60
-  force_destroy              = true
+  force_destroy_bucket       = true
 }

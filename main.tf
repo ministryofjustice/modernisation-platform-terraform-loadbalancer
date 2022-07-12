@@ -8,7 +8,7 @@ data "aws_vpc" "shared" {
 
 module "s3-bucket" {
   count  = var.existing_bucket_name == "" ? 1 : 0
-  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=v6.0.3"
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=v6.1.1"
 
   providers = {
     aws.bucket-replication = aws.bucket-replication
@@ -17,6 +17,7 @@ module "s3-bucket" {
   bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json]
   replication_enabled = false
   versioning_enabled  = true
+  force_destroy       = var.force_destroy_bucket
   lifecycle_rule = [
     {
       id      = "main"
