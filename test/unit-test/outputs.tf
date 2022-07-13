@@ -1,8 +1,7 @@
-# output "bucketArn" {
-#   value       = module.lb_access_logs_enabled.arn
-#   description = "Bucket ARN"
+# output "VPC" {
+#   value = module.lb_access_logs_enabled.vpc_all
+# description = "VPC being used"
 # }
-# output "bucket_id" {
-#   value       = module.s3.bucket.id
-#   description = "Bucket Name"
-# }
+output "athena_db_name" {
+  value = module.lb_access_logs_enabled.athena_db_name
+}

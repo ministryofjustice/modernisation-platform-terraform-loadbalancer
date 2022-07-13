@@ -60,7 +60,6 @@ module "lb_access_logs_enabled" {
   source = "../.."
 
   vpc_all = "${local.vpc_name}-${local.environment}"
-  #existing_bucket_name               = "my-bucket-name"
   application_name           = local.application_name
   public_subnets             = [data.aws_subnet.public_subnets_a.id,data.aws_subnet.public_subnets_b.id,data.aws_subnet.public_subnets_c.id]
   loadbalancer_ingress_rules = local.loadbalancer_ingress_rules
