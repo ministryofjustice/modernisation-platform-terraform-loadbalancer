@@ -1,8 +1,8 @@
 package main
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 
 	// "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -25,14 +25,9 @@ func TestLBCreation(t *testing.T) {
 	// subnet := terraform.Output(t, terraformOptions, "subnet")
 	athena_db_name := terraform.Output(t, terraformOptions, "athena_db_name")
 	fmt.Println("athena_db_name", athena_db_name)
-	assert.Equal(t,"loadbalancer_access_logs", athena_db_name,"PASS")
-	// assert.Regexp(t, regexp.MustCompile(`^arn:aws:s3:::s3-bucket-*`), bucketArn)
-	// aws.IsPublicSubnet(t, subnet, awsRegion)
-
-	// assert.Equal(t, expectedStatus, actualStatus)
-
-	// Verify that our Bucket has versioning enabled
-	// actualStatus := aws.GetS3BucketVersioning(t, awsRegion, bucketID)
-	// expectedStatus := "Enabled"
-	// assert.Equal(t, expectedStatus, actualStatus)
+	assert.Equal(t, "loadbalancer_access_logs", athena_db_name)
+	security_group := terraform.Output(t, terraformOptions, "security_group")
+	fmt.Println("***SECURITY GROUP***", security_group)
+	output_security_group := terraform.Output(t, terraformOptions, "output_security_group")
+	assert.Equal(t, output_security_group, security_group)
 }
