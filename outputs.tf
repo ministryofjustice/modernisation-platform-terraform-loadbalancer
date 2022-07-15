@@ -1,9 +1,11 @@
-output "athena_db_name" {
-  value = aws_athena_database.lb-access-logs.id
+output "athena_db" {
+  value = aws_athena_database.lb-access-logs
 }
+
 output "security_group" {
-    value = aws_security_group.lb.id
+  value = aws_security_group.lb
 }
-output "output_security_group" {
-  value = aws_security_group.lb.id
+
+output "load_balancer" {
+  value = aws_lb.loadbalancer
 }

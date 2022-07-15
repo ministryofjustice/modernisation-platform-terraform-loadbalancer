@@ -123,17 +123,17 @@ data "aws_elb_service_account" "default" {}
 data "aws_region" "current" {}
 
 resource "aws_lb" "loadbalancer" {
-  name               = "${var.application_name}-lb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb.id]
-  subnets            = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
+  name                       = "${var.application_name}-lb"
+  internal                   = false
+  load_balancer_type         = "application"
+  security_groups            = [aws_security_group.lb.id]
+  subnets                    = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
   enable_deletion_protection = var.enable_deletion_protection
-  idle_timeout       = var.idle_timeout
+  idle_timeout               = var.idle_timeout
 
   access_logs {
     bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : "${module.s3-bucket[0].bucket.id}"
-    prefix  = "${var.application_name}"
+    prefix  = var.application_name
     enabled = true
   }
 
@@ -192,8 +192,8 @@ resource "aws_athena_database" "lb-access-logs" {
 
 resource "aws_athena_named_query" "main" {
   name     = "${var.application_name}-create-table"
-  database = "${aws_athena_database.lb-access-logs.name}"
-  query    = "${data.template_file.lb-access-logs.rendered}"
+  database = aws_athena_database.lb-access-logs.name
+  query    = data.template_file.lb-access-logs.rendered
 }
 
 resource "aws_athena_workgroup" "lb-access-logs" {

@@ -9,5 +9,3 @@ tmp/
 .idea/
 .tfsec/
 .tfsec/*
-test/unit-test/.terraform.*
-test/unit-test/terraform.*

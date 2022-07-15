@@ -28,7 +28,7 @@ locals {
       security_groups = []
     }
   }
- }
+}
 data "aws_vpc" "shared" {
   tags = {
     "Name" = "${var.networking[0].business-unit}-${local.environment}"
@@ -59,9 +59,9 @@ data "aws_subnet" "public_subnets_c" {
 module "lb_access_logs_enabled" {
   source = "../.."
 
-  vpc_all = "${local.vpc_name}-${local.environment}"
+  vpc_all                    = "${local.vpc_name}-${local.environment}"
   application_name           = local.application_name
-  public_subnets             = [data.aws_subnet.public_subnets_a.id,data.aws_subnet.public_subnets_b.id,data.aws_subnet.public_subnets_c.id]
+  public_subnets             = [data.aws_subnet.public_subnets_a.id, data.aws_subnet.public_subnets_b.id, data.aws_subnet.public_subnets_c.id]
   loadbalancer_ingress_rules = local.loadbalancer_ingress_rules
   loadbalancer_egress_rules  = local.loadbalancer_egress_rules
   tags                       = local.tags

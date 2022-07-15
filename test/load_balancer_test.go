@@ -1,15 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"testing"
-
-	// "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"regexp"
+	"testing"
 )
 
-// "regexp" ^
 func TestLBCreation(t *testing.T) {
 	t.Parallel()
 
@@ -18,16 +15,13 @@ func TestLBCreation(t *testing.T) {
 	})
 
 	defer terraform.Destroy(t, terraformOptions)
-	// awsRegion := "eu-west-2"
+
 	terraform.InitAndApply(t, terraformOptions)
 
-	// Run `terraform output` to get the value of an output variable
-	// subnet := terraform.Output(t, terraformOptions, "subnet")
-	athena_db_name := terraform.Output(t, terraformOptions, "athena_db_name")
-	fmt.Println("athena_db_name", athena_db_name)
-	assert.Equal(t, "loadbalancer_access_logs", athena_db_name)
-	security_group := terraform.Output(t, terraformOptions, "security_group")
-	fmt.Println("***SECURITY GROUP***", security_group)
-	output_security_group := terraform.Output(t, terraformOptions, "output_security_group")
-	assert.Equal(t, output_security_group, security_group)
+	athenaDbName := terraform.Output(t, terraformOptions, "athena_db_name")
+	assert.Equal(t, "loadbalancer_access_logs", athenaDbName)
+	securityGroupArn := terraform.Output(t, terraformOptions, "security_group_arn")
+	assert.Regexp(t, regexp.MustCompile(`^arn:aws:ec2:eu-west-2:[0-9]{12}:security-group\/sg-*`), securityGroupArn)
+	loadbalancerArn := terraform.Output(t, terraformOptions, "load_balancer_arn")
+	assert.Regexp(t, regexp.MustCompile(`^arn:aws:elasticloadbalancing:eu-west-2:[0-9]{12}:loadbalancer\/app\/testing-lb\/*`), loadbalancerArn)
 }
