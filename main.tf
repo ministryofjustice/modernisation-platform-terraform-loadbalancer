@@ -111,18 +111,17 @@ data "aws_iam_policy_document" "bucket_policy" {
     ]
 
     resources = [
-      var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}" : "${module.s3-bucket[0].bucket.arn}"
+      var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}" : module.s3-bucket[0].bucket.arn
     ]
   }
 }
 
 data "aws_elb_service_account" "default" {}
 
-# https://www.terraform.io/docs/providers/aws/d/region.html
-# Get the region of the callee
-data "aws_region" "current" {}
-
+#tfsec:ignore:aws-elb-alb-not-public
 resource "aws_lb" "loadbalancer" {
+  #checkov:skip=CKV_AWS_150:preventing destroy can be controlled outside of the module
+  #checkov:skip=CKV2_AWS_28:WAF is configured outside of the module for more flexibility
   name                       = "${var.application_name}-lb"
   internal                   = false
   load_balancer_type         = "application"
@@ -130,9 +129,10 @@ resource "aws_lb" "loadbalancer" {
   subnets                    = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
   enable_deletion_protection = var.enable_deletion_protection
   idle_timeout               = var.idle_timeout
+  drop_invalid_header_fields = true
 
   access_logs {
-    bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : "${module.s3-bucket[0].bucket.id}"
+    bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
     prefix  = var.application_name
     enabled = true
   }
@@ -175,25 +175,26 @@ resource "aws_security_group" "lb" {
   }
 }
 
-data "template_file" "lb-access-logs" {
-  template = file("${path.module}/templates/create_table.sql")
-
-  vars = {
-    bucket     = var.existing_bucket_name != "" ? var.existing_bucket_name : "${module.s3-bucket[0].bucket.id}"
-    account_id = var.account_number
-    region     = var.region
-  }
-}
 
 resource "aws_athena_database" "lb-access-logs" {
   name   = "loadbalancer_access_logs"
-  bucket = var.existing_bucket_name != "" ? var.existing_bucket_name : "${module.s3-bucket[0].bucket.id}"
+  bucket = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
+  encryption_configuration {
+    encryption_option = "SSE_S3"
+  }
 }
 
 resource "aws_athena_named_query" "main" {
   name     = "${var.application_name}-create-table"
   database = aws_athena_database.lb-access-logs.name
-  query    = data.template_file.lb-access-logs.rendered
+  query = templatefile(
+    "${path.module}/templates/create_table.sql",
+    {
+      bucket     = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
+      account_id = var.account_number
+      region     = var.region
+    }
+  )
 }
 
 resource "aws_athena_workgroup" "lb-access-logs" {

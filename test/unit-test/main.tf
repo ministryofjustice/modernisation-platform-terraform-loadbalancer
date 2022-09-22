@@ -58,7 +58,11 @@ data "aws_subnet" "public_subnets_c" {
 
 module "lb_access_logs_enabled" {
   source = "../.."
-
+  providers = {
+    # Here we use the default provider for the S3 bucket module, buck replication is disabled but we still
+    # Need to pass the provider to the S3 bucket module
+    aws.bucket-replication = aws
+  }
   vpc_all                    = "${local.vpc_name}-${local.environment}"
   application_name           = local.application_name
   public_subnets             = [data.aws_subnet.public_subnets_a.id, data.aws_subnet.public_subnets_b.id, data.aws_subnet.public_subnets_c.id]
