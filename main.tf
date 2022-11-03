@@ -123,7 +123,7 @@ resource "aws_lb" "loadbalancer" {
   #checkov:skip=CKV_AWS_150:preventing destroy can be controlled outside of the module
   #checkov:skip=CKV2_AWS_28:WAF is configured outside of the module for more flexibility
   name                       = "${var.application_name}-lb"
-  internal                   = false
+  internal                   = var.internal_lb
   load_balancer_type         = "application"
   security_groups            = [aws_security_group.lb.id]
   subnets                    = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
