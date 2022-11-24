@@ -29,6 +29,7 @@ locals {
     }
   }
 }
+
 data "aws_vpc" "shared" {
   tags = {
     "Name" = "${var.networking[0].business-unit}-${local.environment}"
@@ -69,7 +70,7 @@ module "lb_access_logs_enabled" {
   loadbalancer_ingress_rules = local.loadbalancer_ingress_rules
   loadbalancer_egress_rules  = local.loadbalancer_egress_rules
   tags                       = local.tags
-  account_number             = local.environment_management.account_ids[terraform.workspace]
+  account_number             = local.environment_management.account_ids["testing-test"]
   region                     = "eu-west-2"
   enable_deletion_protection = false
   idle_timeout               = 60
