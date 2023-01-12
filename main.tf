@@ -140,7 +140,7 @@ resource "aws_lb" "loadbalancer" {
   tags = merge(
     var.tags,
     {
-      Name = "lb-${var.application_name}"
+      Name = "${var.application_name}-lb"
     },
   )
 }
@@ -173,6 +173,13 @@ resource "aws_security_group" "lb" {
       security_groups = lookup(egress.value, "security_groups", null)
     }
   }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.application_name}-lb-security-group"
+    },
+  )
 }
 
 
@@ -211,4 +218,11 @@ resource "aws_athena_workgroup" "lb-access-logs" {
       }
     }
   }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.application_name}-lb-access-logs"
+    },
+  )
 }
