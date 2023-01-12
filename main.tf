@@ -177,7 +177,7 @@ resource "aws_security_group" "lb" {
 
 
 resource "aws_athena_database" "lb-access-logs" {
-  name   = "${var.application_name}-lb-access-logs"
+  name   = replace("${var.application_name}-lb-access-logs", "-", "_") # dashes not allowed in name
   bucket = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
   encryption_configuration {
     encryption_option = "SSE_S3"
