@@ -140,7 +140,7 @@ resource "aws_lb" "loadbalancer" {
   tags = merge(
     var.tags,
     {
-      Name = "lb-${var.application_name}"
+      Name = "${var.application_name}-lb"
     },
   )
 }
@@ -173,11 +173,18 @@ resource "aws_security_group" "lb" {
       security_groups = lookup(egress.value, "security_groups", null)
     }
   }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.application_name}-lb-security-group"
+    },
+  )
 }
 
 
 resource "aws_athena_database" "lb-access-logs" {
-  name   = "loadbalancer_access_logs"
+  name   = replace("${var.application_name}-lb-access-logs", "-", "_") # dashes not allowed in name
   bucket = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
   encryption_configuration {
     encryption_option = "SSE_S3"
@@ -211,4 +218,11 @@ resource "aws_athena_workgroup" "lb-access-logs" {
       }
     }
   }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.application_name}-lb-access-logs"
+    },
+  )
 }
