@@ -125,7 +125,7 @@ resource "aws_lb" "loadbalancer" {
   name                       = "${var.application_name}-lb"
   internal                   = var.internal_lb
   load_balancer_type         = "application"
-  security_groups            = [aws_security_group.lb.id]
+  security_groups            = var.security_groups == null ? [aws_security_group.lb.id] : var.security_groups
   subnets                    = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
   enable_deletion_protection = var.enable_deletion_protection
   idle_timeout               = var.idle_timeout
@@ -146,6 +146,7 @@ resource "aws_lb" "loadbalancer" {
 }
 
 resource "aws_security_group" "lb" {
+  count       = var.security_groups == null ? 1 : 0
   name        = "${var.application_name}-lb-security-group"
   description = "Controls access to the loadbalancer"
   vpc_id      = data.aws_vpc.shared.id
