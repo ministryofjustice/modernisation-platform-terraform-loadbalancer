@@ -3,7 +3,7 @@ output "athena_db" {
 }
 
 output "security_group" {
-  value = len(aws_security_group.lb) > 0 ? aws_security_group.lb[0] : null
+  value = length(aws_security_group.lb) > 0 ? aws_security_group.lb[0] : null
 }
 
 output "load_balancer" {
