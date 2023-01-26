@@ -6,8 +6,7 @@ A Terraform module that creates application loadbalancer (with loadbalancer secu
 
 An s3 bucket name can be provided in the module by adding the `existing_bucket_name` variable and adding the bucket name. Otherwise, if no bucket exists one will be created and no variable needs to be set in the module.
 
-Either pass in existing security group(s) to attach to the load balancer using the `security_groups` variable, or define `loadbalancer_ingress_rules` and `loadbalancer_egre
-ss_rules` variables to create a new security group within the module.
+Either pass in existing security group(s) to attach to the load balancer using the `security_groups` variable, or define `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables to create a new security group within the module.
 
 If using the module to create the security group, you can use locals to define the rules for the `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables as i
 n the below example.
