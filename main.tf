@@ -125,7 +125,7 @@ resource "aws_lb" "loadbalancer" {
   name                       = "${var.application_name}-lb"
   internal                   = var.internal_lb
   load_balancer_type         = "application"
-  security_groups            = var.security_groups == null ? [aws_security_group.lb.id] : var.security_groups
+  security_groups            = length(aws_security_group.lb) > 0 ? [aws_security_group.lb[0].id] : var.security_groups
   subnets                    = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
   enable_deletion_protection = var.enable_deletion_protection
   idle_timeout               = var.idle_timeout
