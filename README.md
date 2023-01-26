@@ -6,7 +6,9 @@ A Terraform module that creates application loadbalancer (with loadbalancer secu
 
 An s3 bucket name can be provided in the module by adding the `existing_bucket_name` variable and adding the bucket name. Otherwise, if no bucket exists one will be created and no variable needs to be set in the module.
 
-A locals for the loadbalancer security group is necessary to satisfy the `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables and creates security group rules for the loadbalancer security group. Below is an example:
+Either pass in existing security group(s) to attach to the load balancer using the `security_groups` variable, or define `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables to create a new security group within the module.
+
+If using the module to create the security group, you can use locals to define the rules for the `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables as in the below example.
 
 ```
 locals {
@@ -28,7 +30,6 @@ locals {
       security_groups = []
     }
   }
-
   loadbalancer_egress_rules = {
     "cluster_ec2_lb_egress" = {
       description     = "Cluster EC2 loadbalancer egress rule"
@@ -187,10 +188,11 @@ If you're looking to raise an issue with this module, please create a new issue 
 | <a name="input_force_destroy_bucket"></a> [force\_destroy\_bucket](#input\_force\_destroy\_bucket) | A boolean that indicates all objects (including any locked objects) should be deleted from the bucket so that the bucket can be destroyed without error. These objects are not recoverable. | `bool` | `false` | no |
 | <a name="input_idle_timeout"></a> [idle\_timeout](#input\_idle\_timeout) | The time in seconds that the connection is allowed to be idle. | `string` | n/a | yes |
 | <a name="input_internal_lb"></a> [internal\_lb](#input\_internal\_lb) | A boolean that determines whether the load balancer is internal or internet-facing. | `bool` | `false` | no |
-| <a name="input_loadbalancer_egress_rules"></a> [loadbalancer\_egress\_rules](#input\_loadbalancer\_egress\_rules) | Security group egress rules for the loadbalancer | <pre>map(object({<br>    description     = string<br>    from_port       = number<br>    to_port         = number<br>    protocol        = string<br>    security_groups = list(string)<br>    cidr_blocks     = list(string)<br>  }))</pre> | n/a | yes |
-| <a name="input_loadbalancer_ingress_rules"></a> [loadbalancer\_ingress\_rules](#input\_loadbalancer\_ingress\_rules) | Security group ingress rules for the loadbalancer | <pre>map(object({<br>    description     = string<br>    from_port       = number<br>    to_port         = number<br>    protocol        = string<br>    security_groups = list(string)<br>    cidr_blocks     = list(string)<br>  }))</pre> | n/a | yes |
+| <a name="input_loadbalancer_egress_rules"></a> [loadbalancer\_egress\_rules](#input\_loadbalancer\_egress\_rules) | Create new security group with these egress rules for the loadbalancer.  Or use the security\_groups var to attach existing group(s) | <pre>map(object({<br>    description     = string<br>    from_port       = number<br>    to_port         = number<br>    protocol        = string<br>    security_groups = list(string)<br>    cidr_blocks     = list(string)<br>  }))</pre> | `{}` | no |
+| <a name="input_loadbalancer_ingress_rules"></a> [loadbalancer\_ingress\_rules](#input\_loadbalancer\_ingress\_rules) | Create new security group with these ingress rules for the loadbalancer.  Or use the security\_groups var to attach existing group(s) | <pre>map(object({<br>    description     = string<br>    from_port       = number<br>    to_port         = number<br>    protocol        = string<br>    security_groups = list(string)<br>    cidr_blocks     = list(string)<br>  }))</pre> | `{}` | no |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | Public subnets | `list(string)` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS Region where resources are to be created | `string` | n/a | yes |
+| <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | List of existing security group ids to attach to the load balancer.  You can use this instead of loadbalancer\_ingress\_rules,loadbalancer\_egress\_rules vars | `list(string)` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Common tags to be used by all resources | `map(string)` | n/a | yes |
 | <a name="input_vpc_all"></a> [vpc\_all](#input\_vpc\_all) | The full name of the VPC (including environment) used to create resources | `string` | n/a | yes |
 

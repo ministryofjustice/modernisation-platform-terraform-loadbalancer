@@ -15,7 +15,7 @@ variable "public_subnets" {
   description = "Public subnets"
 }
 variable "loadbalancer_ingress_rules" {
-  description = "Security group ingress rules for the loadbalancer"
+  description = "Create new security group with these ingress rules for the loadbalancer.  Or use the security_groups var to attach existing group(s)"
   type = map(object({
     description     = string
     from_port       = number
@@ -24,10 +24,11 @@ variable "loadbalancer_ingress_rules" {
     security_groups = list(string)
     cidr_blocks     = list(string)
   }))
+  default = {}
 }
 
 variable "loadbalancer_egress_rules" {
-  description = "Security group egress rules for the loadbalancer"
+  description = "Create new security group with these egress rules for the loadbalancer.  Or use the security_groups var to attach existing group(s)"
   type = map(object({
     description     = string
     from_port       = number
@@ -36,6 +37,12 @@ variable "loadbalancer_egress_rules" {
     security_groups = list(string)
     cidr_blocks     = list(string)
   }))
+  default = {}
+}
+variable "security_groups" {
+  description = "List of existing security group ids to attach to the load balancer.  You can use this instead of loadbalancer_ingress_rules,loadbalancer_egress_rules vars"
+  type        = list(string)
+  default     = null
 }
 variable "vpc_all" {
   type        = string
