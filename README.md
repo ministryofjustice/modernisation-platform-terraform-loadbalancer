@@ -8,8 +8,7 @@ An s3 bucket name can be provided in the module by adding the `existing_bucket_n
 
 Either pass in existing security group(s) to attach to the load balancer using the `security_groups` variable, or define `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables to create a new security group within the module.
 
-If using the module to create the security group, you can use locals to define the rules for the `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables as i
-n the below example.
+If using the module to create the security group, you can use locals to define the rules for the `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables as in the below example.
 
 ```
 locals {
