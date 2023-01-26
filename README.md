@@ -30,7 +30,6 @@ locals {
       security_groups = []
     }
   }
-
   loadbalancer_egress_rules = {
     "cluster_ec2_lb_egress" = {
       description     = "Cluster EC2 loadbalancer egress rule"
