@@ -75,3 +75,8 @@ variable "internal_lb" {
   description = "A boolean that determines whether the load balancer is internal or internet-facing."
   default     = false
 }
+variable "load_balancer_type" {
+  type        = string
+  description = "application or network"
+  default     = "application"
+}
