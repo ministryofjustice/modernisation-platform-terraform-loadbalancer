@@ -80,3 +80,34 @@ variable "load_balancer_type" {
   description = "application or network"
   default     = "application"
 }
+variable "lb_target_groups" {
+  description = "Map of load balancer target groups, where key is the name"
+  type = map(object({
+    port                 = optional(number)
+    protocol             = optional(string)
+    target_type          = string
+    deregistration_delay = optional(number)
+    health_check = optional(object({
+      enabled             = optional(bool)
+      interval            = optional(number)
+      healthy_threshold   = optional(number)
+      matcher             = optional(string)
+      path                = optional(string)
+      port                = optional(number)
+      timeout             = optional(number)
+      unhealthy_threshold = optional(number)
+    }))
+    stickiness = optional(object({
+      enabled         = optional(bool)
+      type            = string
+      cookie_duration = optional(number)
+      cookie_name     = optional(string)
+    }))
+    attachments = optional(list(object({
+      target_id         = string
+      port              = optional(number)
+      availability_zone = optional(string)
+    })), [])
+  }))
+  default = {}
+}
