@@ -6,61 +6,61 @@ data "aws_vpc" "shared" {
 
 # Terraform module which creates S3 Bucket resources for Load Balancer Access Logs on AWS.
 
-# module "s3-bucket" {
-#   count  = var.existing_bucket_name == "" ? 1 : 0
-#   source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=v6.4.0"
+module "s3-bucket" {
+  count  = var.existing_bucket_name == "" ? 1 : 0
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=v6.4.0"
 
-#   providers = {
-#     aws.bucket-replication = aws.bucket-replication
-#   }
-#   bucket_prefix       = "${var.application_name}-lb-access-logs"
-#   bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json]
-#   replication_enabled = false
-#   versioning_enabled  = true
-#   force_destroy       = var.force_destroy_bucket
-#   lifecycle_rule = [
-#     {
-#       id      = "main"
-#       enabled = "Enabled"
-#       prefix  = ""
+  providers = {
+    aws.bucket-replication = aws.bucket-replication
+  }
+  bucket_prefix       = "${var.application_name}-lb-access-logs"
+  bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json]
+  replication_enabled = false
+  versioning_enabled  = true
+  force_destroy       = var.force_destroy_bucket
+  lifecycle_rule = [
+    {
+      id      = "main"
+      enabled = "Enabled"
+      prefix  = ""
 
-#       tags = {
-#         rule      = "log"
-#         autoclean = "true"
-#       }
+      tags = {
+        rule      = "log"
+        autoclean = "true"
+      }
 
-#       transition = [
-#         {
-#           days          = 90
-#           storage_class = "STANDARD_IA"
-#           }, {
-#           days          = 365
-#           storage_class = "GLACIER"
-#         }
-#       ]
+      transition = [
+        {
+          days          = 90
+          storage_class = "STANDARD_IA"
+          }, {
+          days          = 365
+          storage_class = "GLACIER"
+        }
+      ]
 
-#       expiration = {
-#         days = 730
-#       }
+      expiration = {
+        days = 730
+      }
 
-#       noncurrent_version_transition = [
-#         {
-#           days          = 90
-#           storage_class = "STANDARD_IA"
-#           }, {
-#           days          = 365
-#           storage_class = "GLACIER"
-#         }
-#       ]
+      noncurrent_version_transition = [
+        {
+          days          = 90
+          storage_class = "STANDARD_IA"
+          }, {
+          days          = 365
+          storage_class = "GLACIER"
+        }
+      ]
 
-#       noncurrent_version_expiration = {
-#         days = 730
-#       }
-#     }
-#   ]
+      noncurrent_version_expiration = {
+        days = 730
+      }
+    }
+  ]
 
-#   tags = var.tags
-# }
+  tags = var.tags
+}
 
 # data "aws_iam_policy_document" "bucket_policy" {
 #   statement {
