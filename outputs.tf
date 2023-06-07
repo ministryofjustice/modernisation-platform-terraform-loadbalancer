@@ -1,6 +1,6 @@
-# output "athena_db" {
-#   value = aws_athena_database.lb-access-logs
-# }
+output "athena_db" {
+  value = aws_athena_database.lb-access-logs
+}
 
 output "security_group" {
   value = length(aws_security_group.lb) > 0 ? aws_security_group.lb[0] : null
