@@ -14,7 +14,7 @@ module "s3-bucket" {
     aws.bucket-replication = aws.bucket-replication
   }
   bucket_prefix       = "${var.application_name}-lb-access-logs"
-  bucket_policy       = []# [data.aws_iam_policy_document.bucket_policy.json]
+  bucket_policy       = [] # [data.aws_iam_policy_document.bucket_policy.json]
   replication_enabled = false
   versioning_enabled  = true
   force_destroy       = var.force_destroy_bucket
