@@ -233,7 +233,7 @@ resource "aws_lb_target_group" "this" {
 
   name                 = "${var.application_name}-lb-${each.key}"
   port                 = each.value.port
-  protocol             = each.value.protocol
+  protocol             = "TCP"
   target_type          = "alb"
   deregistration_delay = each.value.deregistration_delay
   vpc_id               = data.aws_vpc.shared.id

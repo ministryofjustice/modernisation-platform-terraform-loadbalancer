@@ -84,8 +84,6 @@ variable "lb_target_groups" {
   description = "Map of load balancer target groups, where key is the name"
   type = map(object({
     port                 = optional(number)
-    protocol             = optional(string)
-    target_type          = string
     deregistration_delay = optional(number)
     health_check = optional(object({
       enabled             = optional(bool)
