@@ -38,7 +38,7 @@ locals {
   provider_name = "core-vpc-${local.environment}"
   lb_target_groups = {
     https-80 = {
-      port                 = 80
+      port = 80
     }
   }
 }
