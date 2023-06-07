@@ -14,7 +14,7 @@ module "s3-bucket" {
     aws.bucket-replication = aws.bucket-replication
   }
   bucket_prefix       = "${var.application_name}-lb-access-logs"
-  bucket_policy       = []# [data.aws_iam_policy_document.bucket_policy.json]
+  bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json]
   replication_enabled = false
   versioning_enabled  = true
   force_destroy       = var.force_destroy_bucket
@@ -62,59 +62,59 @@ module "s3-bucket" {
   tags = var.tags
 }
 
-# data "aws_iam_policy_document" "bucket_policy" {
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "s3:PutObject"
-#     ]
-#     resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
-#     principals {
-#       type        = "AWS"
-#       identifiers = [data.aws_elb_service_account.default.arn]
-#     }
-#   }
-#   statement {
-#     sid = "AWSLogDeliveryWrite"
+data "aws_iam_policy_document" "bucket_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject"
+    ]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    principals {
+      type        = "AWS"
+      identifiers = [data.aws_elb_service_account.default.arn]
+    }
+  }
+  statement {
+    sid = "AWSLogDeliveryWrite"
 
-#     principals {
-#       type        = "Service"
-#       identifiers = ["delivery.logs.amazonaws.com"]
-#     }
+    principals {
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
 
-#     actions = [
-#       "s3:PutObject"
-#     ]
+    actions = [
+      "s3:PutObject"
+    ]
 
-#     resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
 
-#     condition {
-#       test     = "StringEquals"
-#       variable = "s3:x-amz-acl"
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
 
-#       values = [
-#         "bucket-owner-full-control"
-#       ]
-#     }
-#   }
+      values = [
+        "bucket-owner-full-control"
+      ]
+    }
+  }
 
-#   statement {
-#     sid = "AWSLogDeliveryAclCheck"
+  statement {
+    sid = "AWSLogDeliveryAclCheck"
 
-#     principals {
-#       type        = "Service"
-#       identifiers = ["delivery.logs.amazonaws.com"]
-#     }
+    principals {
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
 
-#     actions = [
-#       "s3:GetBucketAcl"
-#     ]
+    actions = [
+      "s3:GetBucketAcl"
+    ]
 
-#     resources = [
-#       var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}" : module.s3-bucket[0].bucket.arn
-#     ]
-#   }
-# }
+    resources = [
+      var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}" : module.s3-bucket[0].bucket.arn
+    ]
+  }
+}
 
 data "aws_elb_service_account" "default" {}
 
@@ -131,11 +131,11 @@ resource "aws_lb" "loadbalancer" {
   idle_timeout               = var.idle_timeout
   drop_invalid_header_fields = true
 
-  # access_logs {
-  #   bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
-  #   prefix  = var.application_name
-  #   enabled = true
-  # }
+  access_logs {
+    bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
+    prefix  = var.application_name
+    enabled = true
+  }
 
   tags = merge(
     var.tags,
@@ -184,49 +184,49 @@ resource "aws_security_group" "lb" {
 }
 
 
-# resource "aws_athena_database" "lb-access-logs" {
-#   name   = replace("${var.application_name}-lb-access-logs", "-", "_") # dashes not allowed in name
-#   bucket = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
-#   encryption_configuration {
-#     encryption_option = "SSE_S3"
-#   }
-# }
+resource "aws_athena_database" "lb-access-logs" {
+  name   = replace("${var.application_name}-lb-access-logs", "-", "_") # dashes not allowed in name
+  bucket = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
+  encryption_configuration {
+    encryption_option = "SSE_S3"
+  }
+}
 
-# resource "aws_athena_named_query" "main" {
-#   name     = "${var.application_name}-create-table"
-#   database = aws_athena_database.lb-access-logs.name
-#   query = templatefile(
-#     "${path.module}/templates/create_table.sql",
-#     {
-#       bucket     = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
-#       account_id = var.account_number
-#       region     = var.region
-#     }
-#   )
-# }
+resource "aws_athena_named_query" "main" {
+  name     = "${var.application_name}-create-table"
+  database = aws_athena_database.lb-access-logs.name
+  query = templatefile(
+    "${path.module}/templates/create_table.sql",
+    {
+      bucket     = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
+      account_id = var.account_number
+      region     = var.region
+    }
+  )
+}
 
-# resource "aws_athena_workgroup" "lb-access-logs" {
-#   name = "${var.application_name}-lb-access-logs"
+resource "aws_athena_workgroup" "lb-access-logs" {
+  name = "${var.application_name}-lb-access-logs"
 
-#   configuration {
-#     enforce_workgroup_configuration    = true
-#     publish_cloudwatch_metrics_enabled = true
+  configuration {
+    enforce_workgroup_configuration    = true
+    publish_cloudwatch_metrics_enabled = true
 
-#     result_configuration {
-#       output_location = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/output/" : "s3://${module.s3-bucket[0].bucket.id}/output/"
-#       encryption_configuration {
-#         encryption_option = "SSE_S3"
-#       }
-#     }
-#   }
+    result_configuration {
+      output_location = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/output/" : "s3://${module.s3-bucket[0].bucket.id}/output/"
+      encryption_configuration {
+        encryption_option = "SSE_S3"
+      }
+    }
+  }
 
-#   tags = merge(
-#     var.tags,
-#     {
-#       Name = "${var.application_name}-lb-access-logs"
-#     },
-#   )
-# }
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.application_name}-lb-access-logs"
+    },
+  )
+}
 
 resource "aws_lb_target_group" "this" {
   for_each = var.lb_target_groups
