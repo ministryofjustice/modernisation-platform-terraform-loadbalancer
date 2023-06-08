@@ -75,4 +75,5 @@ module "lb_access_logs_enabled" {
   enable_deletion_protection = false
   idle_timeout               = 60
   force_destroy_bucket       = true
+  lb_target_groups           = local.lb_target_groups
 }

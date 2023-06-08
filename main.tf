@@ -227,3 +227,44 @@ resource "aws_athena_workgroup" "lb-access-logs" {
     },
   )
 }
+
+resource "aws_lb_target_group" "this" {
+  for_each = var.lb_target_groups
+
+  name                 = "${var.application_name}-lb-${each.key}"
+  port                 = each.value.port
+  protocol             = "TCP"
+  target_type          = "alb"
+  deregistration_delay = each.value.deregistration_delay
+  vpc_id               = data.aws_vpc.shared.id
+
+  dynamic "health_check" {
+    for_each = each.value.health_check != null ? [each.value.health_check] : []
+    content {
+      enabled             = health_check.value.enabled
+      interval            = health_check.value.interval
+      healthy_threshold   = health_check.value.healthy_threshold
+      matcher             = health_check.value.matcher
+      path                = health_check.value.path
+      port                = health_check.value.port
+      timeout             = health_check.value.timeout
+      unhealthy_threshold = health_check.value.unhealthy_threshold
+    }
+  }
+  dynamic "stickiness" {
+    for_each = each.value.stickiness != null ? [each.value.stickiness] : []
+    content {
+      enabled         = stickiness.value.enabled
+      type            = stickiness.value.type
+      cookie_duration = stickiness.value.cookie_duration
+      cookie_name     = stickiness.value.cookie_name
+    }
+  }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.application_name}-lb-${each.key}"
+    },
+  )
+}
