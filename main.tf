@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "bucket_policy" {
     actions = [
       "s3:PutObject"
     ]
-    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/*" : "${module.s3-bucket[0].bucket.arn}/*"]
     principals {
       type        = "AWS"
       identifiers = [data.aws_elb_service_account.default.arn]
@@ -86,7 +86,7 @@ data "aws_iam_policy_document" "bucket_policy" {
       "s3:PutObject"
     ]
 
-    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/*" : "${module.s3-bucket[0].bucket.arn}/*"]
 
     condition {
       test     = "StringEquals"
