@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "bucket_policy" {
     actions = [
       "s3:PutObject"
     ]
-    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/*" : "${module.s3-bucket[0].bucket.arn}/*"]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
     principals {
       type        = "AWS"
       identifiers = [data.aws_elb_service_account.default.arn]
@@ -86,7 +86,7 @@ data "aws_iam_policy_document" "bucket_policy" {
       "s3:PutObject"
     ]
 
-    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/*" : "${module.s3-bucket[0].bucket.arn}/*"]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
 
     condition {
       test     = "StringEquals"
@@ -131,11 +131,11 @@ resource "aws_lb" "loadbalancer" {
   idle_timeout               = var.idle_timeout
   drop_invalid_header_fields = true
 
-  access_logs {
-    bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
-    prefix  = var.application_name
-    enabled = true
-  }
+  # access_logs {
+  #   bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
+  #   prefix  = var.application_name
+  #   enabled = true
+  # }
 
   tags = merge(
     var.tags,
