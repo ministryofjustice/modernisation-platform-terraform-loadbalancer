@@ -131,11 +131,11 @@ resource "aws_lb" "loadbalancer" {
   idle_timeout               = var.idle_timeout
   drop_invalid_header_fields = true
 
-  access_logs {
-    bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
-    prefix  = var.application_name
-    enabled = true
-  }
+  # access_logs {
+  #   bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
+  #   prefix  = var.application_name
+  #   enabled = true
+  # }
 
   tags = merge(
     var.tags,
