@@ -1,6 +1,5 @@
 output "athena_db" {
-  count  = var.access_logs ? 1 : 0
-  value = aws_athena_database.lb-access-logs
+  value = var.access_logs ? aws_athena_database.lb-access-logs : ""
 }
 
 output "security_group" {
