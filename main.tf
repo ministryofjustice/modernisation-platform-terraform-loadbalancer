@@ -7,14 +7,14 @@ data "aws_vpc" "shared" {
 # Terraform module which creates S3 Bucket resources for Load Balancer Access Logs on AWS.
 
 module "s3-bucket" {
-  count  = var.existing_bucket_name == "" ? 1 : 0
+  count  = var.existing_bucket_name == "" && var.access_logs ? 1 : 0
   source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=v6.4.0"
 
   providers = {
     aws.bucket-replication = aws.bucket-replication
   }
   bucket_prefix       = "${var.application_name}-lb-access-logs"
-  bucket_policy       = [data.aws_iam_policy_document.bucket_policy.json]
+  bucket_policy       = [data.aws_iam_policy_document.bucket_policy[0].json]
   replication_enabled = false
   versioning_enabled  = true
   force_destroy       = var.force_destroy_bucket
@@ -63,6 +63,7 @@ module "s3-bucket" {
 }
 
 data "aws_iam_policy_document" "bucket_policy" {
+  count = var.access_logs ? 1 : 0
   statement {
     effect = "Allow"
     actions = [
@@ -134,7 +135,7 @@ resource "aws_lb" "loadbalancer" {
   access_logs {
     bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
     prefix  = var.application_name
-    enabled = true
+    enabled = var.access_logs
   }
 
   tags = merge(
@@ -185,6 +186,7 @@ resource "aws_security_group" "lb" {
 
 
 resource "aws_athena_database" "lb-access-logs" {
+  count  = var.access_logs ? 1 : 0
   name   = replace("${var.application_name}-lb-access-logs", "-", "_") # dashes not allowed in name
   bucket = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
   encryption_configuration {
@@ -193,8 +195,9 @@ resource "aws_athena_database" "lb-access-logs" {
 }
 
 resource "aws_athena_named_query" "main" {
+  count    = var.access_logs ? 1 : 0
   name     = "${var.application_name}-create-table"
-  database = aws_athena_database.lb-access-logs.name
+  database = aws_athena_database.lb-access-logs[0].name
   query = templatefile(
     "${path.module}/templates/create_table.sql",
     {
@@ -206,7 +209,8 @@ resource "aws_athena_named_query" "main" {
 }
 
 resource "aws_athena_workgroup" "lb-access-logs" {
-  name = "${var.application_name}-lb-access-logs"
+  count = var.access_logs ? 1 : 0
+  name  = "${var.application_name}-lb-access-logs"
 
   configuration {
     enforce_workgroup_configuration    = true
