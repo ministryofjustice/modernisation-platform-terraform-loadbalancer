@@ -80,6 +80,11 @@ variable "load_balancer_type" {
   description = "application or network"
   default     = "application"
 }
+variable "access_logs" {
+  type        = bool
+  description = "A boolean that determines whether to have access logs"
+  default     = true
+}
 variable "lb_target_groups" {
   description = "Map of load balancer target groups, where key is the name"
   type = map(object({

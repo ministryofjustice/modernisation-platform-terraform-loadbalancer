@@ -1,4 +1,5 @@
 output "athena_db" {
+  count  = var.access_logs ? 1 : 0
   value = aws_athena_database.lb-access-logs
 }
 
