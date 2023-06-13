@@ -63,7 +63,7 @@ module "s3-bucket" {
 }
 
 data "aws_iam_policy_document" "bucket_policy" {
-  count  = var.access_logs ? 1 : 0
+  count = var.access_logs ? 1 : 0
   statement {
     effect = "Allow"
     actions = [
@@ -195,7 +195,7 @@ resource "aws_athena_database" "lb-access-logs" {
 }
 
 resource "aws_athena_named_query" "main" {
-  count  = var.access_logs ? 1 : 0
+  count    = var.access_logs ? 1 : 0
   name     = "${var.application_name}-create-table"
   database = aws_athena_database.lb-access-logs[0].name
   query = templatefile(
@@ -209,8 +209,8 @@ resource "aws_athena_named_query" "main" {
 }
 
 resource "aws_athena_workgroup" "lb-access-logs" {
-  count  = var.access_logs ? 1 : 0
-  name = "${var.application_name}-lb-access-logs"
+  count = var.access_logs ? 1 : 0
+  name  = "${var.application_name}-lb-access-logs"
 
   configuration {
     enforce_workgroup_configuration    = true
