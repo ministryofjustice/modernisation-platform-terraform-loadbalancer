@@ -243,7 +243,7 @@ resource "aws_lb_target_group" "this" {
   protocol             = "TCP"
   target_type          = "alb"
   deregistration_delay = each.value.deregistration_delay
-  vpc_id               = data.aws_vpc.shared.id
+  vpc_id               = "vpc-0b327c73f2d0a27d2" #data.aws_vpc.shared.id
 
   dynamic "health_check" {
     for_each = each.value.health_check != null ? [each.value.health_check] : []
