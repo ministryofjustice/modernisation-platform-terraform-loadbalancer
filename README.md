@@ -196,6 +196,7 @@ If you're looking to raise an issue with this module, please create a new issue 
 | <a name="input_loadbalancer_ingress_rules"></a> [loadbalancer\_ingress\_rules](#input\_loadbalancer\_ingress\_rules) | Create new security group with these ingress rules for the loadbalancer.  Or use the security\_groups var to attach existing group(s) | <pre>map(object({<br>    description     = string<br>    from_port       = number<br>    to_port         = number<br>    protocol        = string<br>    security_groups = list(string)<br>    cidr_blocks     = list(string)<br>  }))</pre> | `{}` | no |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | Public subnets | `list(string)` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS Region where resources are to be created | `string` | n/a | yes |
+| <a name="input_s3_versioning"></a> [s3\_versioning](#input\_s3\_versioning) | A boolean that determines whether s3 will have versioning | `bool` | `true` | no |
 | <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | List of existing security group ids to attach to the load balancer.  You can use this instead of loadbalancer\_ingress\_rules,loadbalancer\_egress\_rules vars | `list(string)` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Common tags to be used by all resources | `map(string)` | n/a | yes |
 | <a name="input_vpc_all"></a> [vpc\_all](#input\_vpc\_all) | The full name of the VPC (including environment) used to create resources | `string` | n/a | yes |
