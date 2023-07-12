@@ -75,6 +75,11 @@ variable "internal_lb" {
   description = "A boolean that determines whether the load balancer is internal or internet-facing."
   default     = false
 }
+variable "enable_cross_zone_load_balancing" {
+  type        = bool
+  description = "A boolean that determines whether the load balancer has cross zone load balancing"
+  default     = false
+}
 variable "load_balancer_type" {
   type        = string
   description = "application or network"

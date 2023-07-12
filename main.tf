@@ -130,6 +130,7 @@ resource "aws_lb" "loadbalancer" {
   enable_deletion_protection = var.enable_deletion_protection
   idle_timeout               = var.idle_timeout
   drop_invalid_header_fields = true
+  enable_cross_zone_load_balancing = var.enable_cross_zone_load_balancing
 
   access_logs {
     bucket  = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
