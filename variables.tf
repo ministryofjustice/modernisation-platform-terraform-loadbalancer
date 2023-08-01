@@ -85,6 +85,11 @@ variable "access_logs" {
   description = "A boolean that determines whether to have access logs"
   default     = true
 }
+variable "s3_versioning" {
+  type        = bool
+  description = "A boolean that determines whether s3 will have versioning"
+  default     = true
+}
 variable "lb_target_groups" {
   description = "Map of load balancer target groups, where key is the name"
   type = map(object({
