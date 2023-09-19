@@ -1,4 +1,4 @@
-CREATE EXTERNAL TABLE IF NOT EXISTS lb_logs (
+CREATE EXTERNAL TABLE IF NOT EXISTS ${database}.lb_logs (
   type string,
   time string,
   elb string,

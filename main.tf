@@ -210,6 +210,7 @@ resource "aws_athena_named_query" "main" {
       account_id       = var.account_number
       region           = var.region
       application_name = var.application_name
+      database         = aws_athena_database.lb-access-logs[0].name
     }
   )
 }
