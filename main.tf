@@ -198,9 +198,11 @@ resource "aws_athena_database" "lb-access-logs" {
 }
 
 resource "aws_athena_named_query" "main" {
-  count    = var.access_logs ? 1 : 0
-  name     = "${var.application_name}-create-table"
-  database = aws_athena_database.lb-access-logs[0].name
+  count     = var.access_logs ? 1 : 0
+  name      = "${var.application_name}-create-table"
+  database  = aws_athena_database.lb-access-logs[0].name
+  workgroup = aws_athena_workgroup.lb-access-logs[0].id
+
   query = templatefile(
     "${path.module}/templates/create_table.sql",
     {
