@@ -206,9 +206,11 @@ resource "aws_athena_named_query" "main" {
   query = templatefile(
     "${path.module}/templates/create_table.sql",
     {
-      bucket     = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
-      account_id = var.account_number
-      region     = var.region
+      bucket           = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
+      account_id       = var.account_number
+      region           = var.region
+      application_name = var.application_name
+      database         = aws_athena_database.lb-access-logs[0].name
     }
   )
 }

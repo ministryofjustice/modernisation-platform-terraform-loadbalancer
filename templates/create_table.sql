@@ -1,4 +1,4 @@
-CREATE EXTERNAL TABLE IF NOT EXISTS lb_logs (
+CREATE EXTERNAL TABLE IF NOT EXISTS ${database}.lb_logs (
   type string,
   time string,
   elb string,
@@ -33,4 +33,4 @@ CREATE EXTERNAL TABLE IF NOT EXISTS lb_logs (
   WITH SERDEPROPERTIES (
   'serialization.format' = '1',
   'input.regex' = '([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*):([0-9]*) ([^ ]*)[:-]([0-9]*) ([-.0-9]*) ([-.0-9]*) ([-.0-9]*) (|[-0-9]*) (-|[-0-9]*) ([-0-9]*) ([-0-9]*) \"([^ ]*) ([^ ]*) (- |[^ ]*)\" \"([^\"]*)\" ([A-Z0-9-]+) ([A-Za-z0-9.-]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([-.0-9]*) ([^ ]*) \"([^\"]*)\"($| \"[^ ]*\")(.*)')
-  LOCATION 's3://${bucket}/AWSLogs/${account_id}/elasticloadbalancing/${region}/';
+  LOCATION 's3://${bucket}/${application_name}/AWSLogs/${account_id}/elasticloadbalancing/${region}/';
