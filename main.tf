@@ -314,13 +314,6 @@ data "aws_iam_policy_document" "lb_glue_crawler" {
     ]
     resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
   }
-  statement {
-    effect = "Allow"
-    actions = [
-      "kms:Decrypt"
-    ]
-    resources = [aws_kms_key.lb-access-logs.arn]
-  }
 }
 
 resource "aws_iam_role_policy_attachment" "lb_glue_crawler" {
@@ -335,7 +328,7 @@ resource "aws_iam_role_policy_attachment" "lb_glue_servicec" {
 
 # Glue Crawler
 resource "aws_glue_crawler" "ssm_resource_sync" {
-  database_name = aws_athena_database.lb-access-logs.name
+  database_name = aws_athena_database.lb-access-logs[count.index]
   name          = "lb_resource_sync"
   role          = aws_iam_role.lb_glue_crawler.arn
   schedule      = "cron(15 1 ? * MON *)"
