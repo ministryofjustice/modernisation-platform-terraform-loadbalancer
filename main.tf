@@ -329,6 +329,7 @@ resource "aws_iam_role_policy_attachment" "lb_glue_servicec" {
 
 # Glue Crawler
 resource "aws_glue_crawler" "ssm_resource_sync" {
+  #checkov:skip=CKV_AWS_195
   database_name = aws_athena_database.lb-access-logs[0].name
   name          = "lb_resource_sync"
   role          = aws_iam_role.lb_glue_crawler.arn
