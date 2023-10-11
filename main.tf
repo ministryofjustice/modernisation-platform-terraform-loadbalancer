@@ -328,12 +328,12 @@ resource "aws_iam_role_policy_attachment" "lb_glue_servicec" {
 
 # Glue Crawler
 resource "aws_glue_crawler" "ssm_resource_sync" {
-  database_name = aws_athena_database.lb-access-logs[count.index]
+  database_name = aws_athena_database.lb-access-logs[0].name
   name          = "lb_resource_sync"
   role          = aws_iam_role.lb_glue_crawler.arn
-  schedule      = "cron(15 1 ? * MON *)"
+  schedule      = var.log_schedule
 
   s3_target {
-    path = "s3://${module.s3-bucket.bucket_name}"
+    path = "s3://${var.existing_bucket_name}"
   }
 }

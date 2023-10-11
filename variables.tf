@@ -119,3 +119,8 @@ variable "lb_target_groups" {
   }))
   default = {}
 }
+variable "log_schedule" {
+  type = string
+  default = "cron(15 1 ? * MON *)"
+  
+}
