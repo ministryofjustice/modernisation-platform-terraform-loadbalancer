@@ -316,6 +316,7 @@ data "aws_iam_policy_document" "lb_glue_crawler" {
   }
 }
 
+# Glue Crawler Policy
 resource "aws_iam_role_policy_attachment" "lb_glue_crawler" {
   role       = aws_iam_role.lb_glue_crawler.name
   policy_arn = aws_iam_policy.lb_glue_crawler.arn
