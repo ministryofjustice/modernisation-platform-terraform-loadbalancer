@@ -1,10 +1,11 @@
-#checkov:skip:CKV2_GHA_1:Comment
 name: Generate Terraform README docs
 on:
   workflow_dispatch:
   pull_request:
     branches:
       - main
+      
+permissions: read-all
 
 jobs:
   docs:
