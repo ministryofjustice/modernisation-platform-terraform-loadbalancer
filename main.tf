@@ -322,7 +322,7 @@ resource "aws_iam_role_policy_attachment" "lb_glue_crawler" {
   policy_arn = aws_iam_policy.lb_glue_crawler.arn
 }
 
-resource "aws_iam_role_policy_attachment" "lb_glue_servicec" {
+resource "aws_iam_role_policy_attachment" "lb_glue_service" {
   role       = aws_iam_role.lb_glue_crawler.id
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
 }
