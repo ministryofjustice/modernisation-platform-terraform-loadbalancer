@@ -279,3 +279,63 @@ resource "aws_lb_target_group" "this" {
     },
   )
 }
+
+
+# Glue crawler to update Athena Table
+# Role for crawler
+resource "aws_iam_role" "lb_glue_crawler" {
+  name               = "ssm-glue-crawler"
+  assume_role_policy = data.aws_iam_policy_document.lb_glue_crawler_assume.json
+}
+
+data "aws_iam_policy_document" "lb_glue_crawler_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["glue.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_policy" "lb_glue_crawler" {
+  name   = "LbGlueCrawler"
+  policy = data.aws_iam_policy_document.lb_glue_crawler.json
+}
+
+data "aws_iam_policy_document" "lb_glue_crawler" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject"
+    ]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+  }
+}
+
+# Glue Crawler Policy
+resource "aws_iam_role_policy_attachment" "lb_glue_crawler" {
+  role       = aws_iam_role.lb_glue_crawler.name
+  policy_arn = aws_iam_policy.lb_glue_crawler.arn
+}
+
+resource "aws_iam_role_policy_attachment" "lb_glue_service" {
+  role       = aws_iam_role.lb_glue_crawler.id
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
+# Glue Crawler
+resource "aws_glue_crawler" "ssm_resource_sync" {
+  #checkov:skip=CKV_AWS_195
+  database_name = aws_athena_database.lb-access-logs[0].name
+  name          = "lb_resource_sync"
+  role          = aws_iam_role.lb_glue_crawler.arn
+  schedule      = var.log_schedule
+
+  s3_target {
+    path = "s3://${var.existing_bucket_name}"
+  }
+}
