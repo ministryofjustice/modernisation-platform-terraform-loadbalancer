@@ -301,11 +301,13 @@ data "aws_iam_policy_document" "lb_glue_crawler_assume" {
 }
 
 resource "aws_iam_policy" "lb_glue_crawler" {
+  count  = var.access_logs ? 1 : 0
   name   = "LbGlueCrawler"
-  policy = data.aws_iam_policy_document.lb_glue_crawler.json
+  policy = data.aws_iam_policy_document.lb_glue_crawler[count.index].json
 }
 
 data "aws_iam_policy_document" "lb_glue_crawler" {
+  count = var.access_logs ? 1 : 0
   statement {
     effect = "Allow"
     actions = [
@@ -318,8 +320,9 @@ data "aws_iam_policy_document" "lb_glue_crawler" {
 
 # Glue Crawler Policy
 resource "aws_iam_role_policy_attachment" "lb_glue_crawler" {
+  count      = var.access_logs ? 1 : 0
   role       = aws_iam_role.lb_glue_crawler.name
-  policy_arn = aws_iam_policy.lb_glue_crawler.arn
+  policy_arn = aws_iam_policy.lb_glue_crawler[count.index].arn
 }
 
 resource "aws_iam_role_policy_attachment" "lb_glue_service" {
@@ -330,6 +333,7 @@ resource "aws_iam_role_policy_attachment" "lb_glue_service" {
 # Glue Crawler
 resource "aws_glue_crawler" "ssm_resource_sync" {
   #checkov:skip=CKV_AWS_195
+  count         = var.access_logs ? 1 : 0
   database_name = aws_athena_database.lb-access-logs[0].name
   name          = "lb_resource_sync"
   role          = aws_iam_role.lb_glue_crawler.arn
