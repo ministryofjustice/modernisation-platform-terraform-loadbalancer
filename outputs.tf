@@ -9,3 +9,7 @@ output "security_group" {
 output "load_balancer" {
   value = aws_lb.loadbalancer
 }
+
+output "load_balancer_arn" {
+  value = aws_lb.loadbalancer.arn
+}
