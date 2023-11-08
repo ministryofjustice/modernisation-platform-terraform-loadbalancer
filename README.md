@@ -215,5 +215,6 @@ If you're looking to raise an issue with this module, please create a new issue 
 |------|-------------|
 | <a name="output_athena_db"></a> [athena\_db](#output\_athena\_db) | n/a |
 | <a name="output_load_balancer"></a> [load\_balancer](#output\_load\_balancer) | n/a |
+| <a name="output_load_balancer_arn"></a> [load\_balancer\_arn](#output\_load\_balancer\_arn) | n/a |
 | <a name="output_security_group"></a> [security\_group](#output\_security\_group) | n/a |
 <!-- END_TF_DOCS -->
