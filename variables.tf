@@ -12,7 +12,13 @@ variable "application_name" {
 }
 variable "public_subnets" {
   type        = list(string)
-  description = "Public subnets"
+  description = "Badly named variable, use subnets instead. Keeping for backward compatibility"
+  default     = []
+}
+variable "subnets" {
+  type        = list(string)
+  description = "List of subnet IDs. Typically use private subnet for internal LBs and public for public LBs"
+  default     = []
 }
 variable "loadbalancer_ingress_rules" {
   description = "Create new security group with these ingress rules for the loadbalancer.  Or use the security_groups var to attach existing group(s)"
@@ -59,6 +65,7 @@ variable "region" {
 variable "idle_timeout" {
   type        = string
   description = "The time in seconds that the connection is allowed to be idle."
+  default     = null
 }
 variable "existing_bucket_name" {
   type        = string
@@ -94,6 +101,7 @@ variable "lb_target_groups" {
   description = "Map of load balancer target groups, where key is the name"
   type = map(object({
     port                 = optional(number)
+    attachment_port      = optional(number)
     deregistration_delay = optional(number)
     health_check = optional(object({
       enabled             = optional(bool)
@@ -111,11 +119,6 @@ variable "lb_target_groups" {
       cookie_duration = optional(number)
       cookie_name     = optional(string)
     }))
-    attachments = optional(list(object({
-      target_id         = string
-      port              = optional(number)
-      availability_zone = optional(string)
-    })), [])
   }))
   default = {}
 }

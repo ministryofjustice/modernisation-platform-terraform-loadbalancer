@@ -127,7 +127,7 @@ resource "aws_lb" "loadbalancer" {
   internal                   = var.internal_lb
   load_balancer_type         = var.load_balancer_type
   security_groups            = length(aws_security_group.lb) > 0 ? [aws_security_group.lb[0].id] : var.security_groups
-  subnets                    = [var.public_subnets[0], var.public_subnets[1], var.public_subnets[2]]
+  subnets                    = concat(var.subnets, var.public_subnets)
   enable_deletion_protection = var.enable_deletion_protection
   idle_timeout               = var.idle_timeout
   drop_invalid_header_fields = true
@@ -242,7 +242,7 @@ resource "aws_athena_workgroup" "lb-access-logs" {
 resource "aws_lb_target_group" "this" {
   for_each = var.lb_target_groups
 
-  name                 = "${var.application_name}-lb-${each.key}"
+  name                 = each.key
   port                 = each.value.port
   protocol             = "TCP"
   target_type          = "alb"
@@ -275,15 +275,23 @@ resource "aws_lb_target_group" "this" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.application_name}-lb-${each.key}"
+      Name = each.key
     },
   )
 }
 
+resource "aws_lb_target_group_attachment" "this" {
+  for_each = var.lb_target_groups
+
+  target_group_arn = aws_lb_target_group.this[each.key].arn
+  target_id        = aws_lb.loadbalancer.arn
+  port             = coalesce(each.value.attachment_port, each.value.port)
+}
 
 # Glue crawler to update Athena Table
 # Role for crawler
 resource "aws_iam_role" "lb_glue_crawler" {
+  count              = var.access_logs ? 1 : 0
   name               = "ssm-glue-crawler"
   assume_role_policy = data.aws_iam_policy_document.lb_glue_crawler_assume.json
 }
@@ -321,12 +329,13 @@ data "aws_iam_policy_document" "lb_glue_crawler" {
 # Glue Crawler Policy
 resource "aws_iam_role_policy_attachment" "lb_glue_crawler" {
   count      = var.access_logs ? 1 : 0
-  role       = aws_iam_role.lb_glue_crawler.name
+  role       = aws_iam_role.lb_glue_crawler[count.index].name
   policy_arn = aws_iam_policy.lb_glue_crawler[count.index].arn
 }
 
 resource "aws_iam_role_policy_attachment" "lb_glue_service" {
-  role       = aws_iam_role.lb_glue_crawler.id
+  count      = var.access_logs ? 1 : 0
+  role       = aws_iam_role.lb_glue_crawler[count.index].id
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
 }
 
@@ -336,7 +345,7 @@ resource "aws_glue_crawler" "ssm_resource_sync" {
   count         = var.access_logs ? 1 : 0
   database_name = aws_athena_database.lb-access-logs[0].name
   name          = "lb_resource_sync"
-  role          = aws_iam_role.lb_glue_crawler.arn
+  role          = aws_iam_role.lb_glue_crawler[count.index].arn
   schedule      = var.log_schedule
 
   s3_target {
