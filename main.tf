@@ -280,6 +280,13 @@ resource "aws_lb_target_group" "this" {
   )
 }
 
+resource "aws_lb_target_group_attachment" "this" {
+  for_each = var.lb_target_groups
+
+  target_group_arn = aws_lb_target_group.this[each.key].arn
+  target_id        = aws_lb.loadbalancer.arn
+  port             = coalesce(each.value.attachment_port, each.value.port)
+}
 
 # Glue crawler to update Athena Table
 # Role for crawler

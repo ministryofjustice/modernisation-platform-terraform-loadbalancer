@@ -100,6 +100,7 @@ variable "lb_target_groups" {
   description = "Map of load balancer target groups, where key is the name"
   type = map(object({
     port                 = optional(number)
+    attachment_port      = optional(number)
     deregistration_delay = optional(number)
     health_check = optional(object({
       enabled             = optional(bool)
@@ -117,11 +118,6 @@ variable "lb_target_groups" {
       cookie_duration = optional(number)
       cookie_name     = optional(string)
     }))
-    attachments = optional(list(object({
-      target_id         = string
-      port              = optional(number)
-      availability_zone = optional(string)
-    })), [])
   }))
   default = {}
 }
