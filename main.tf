@@ -242,7 +242,7 @@ resource "aws_athena_workgroup" "lb-access-logs" {
 resource "aws_lb_target_group" "this" {
   for_each = var.lb_target_groups
 
-  name                 = "${var.application_name}-lb-${each.key}"
+  name                 = each.key
   port                 = each.value.port
   protocol             = "TCP"
   target_type          = "alb"
@@ -275,7 +275,7 @@ resource "aws_lb_target_group" "this" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.application_name}-lb-${each.key}"
+      Name = each.key
     },
   )
 }
