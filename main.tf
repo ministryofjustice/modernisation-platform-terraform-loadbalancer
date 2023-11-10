@@ -349,6 +349,6 @@ resource "aws_glue_crawler" "ssm_resource_sync" {
   schedule      = var.log_schedule
 
   s3_target {
-    path = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}" : "s3://${module.s3-bucket[0].bucket.id}"
+    path = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/"
   }
 }
