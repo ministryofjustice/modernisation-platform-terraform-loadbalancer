@@ -219,5 +219,7 @@ If you're looking to raise an issue with this module, please create a new issue 
 | <a name="output_lb_target_groups"></a> [lb\_target\_groups](#output\_lb\_target\_groups) | n/a |
 | <a name="output_load_balancer"></a> [load\_balancer](#output\_load\_balancer) | n/a |
 | <a name="output_load_balancer_arn"></a> [load\_balancer\_arn](#output\_load\_balancer\_arn) | n/a |
+| <a name="output_load_balancer_dns_name"></a> [load\_balancer\_dns\_name](#output\_load\_balancer\_dns\_name) | n/a |
+| <a name="output_load_balancer_zone_id"></a> [load\_balancer\_zone\_id](#output\_load\_balancer\_zone\_id) | n/a |
 | <a name="output_security_group"></a> [security\_group](#output\_security\_group) | n/a |
 <!-- END_TF_DOCS -->
