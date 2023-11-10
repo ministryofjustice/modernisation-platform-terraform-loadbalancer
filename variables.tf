@@ -12,7 +12,13 @@ variable "application_name" {
 }
 variable "public_subnets" {
   type        = list(string)
-  description = "Public subnets"
+  description = "Badly named variable, use subnets instead. Keeping for backward compatibility"
+  default     = []
+}
+variable "subnets" {
+  type        = list(string)
+  description = "List of subnet IDs. Typically use private subnet for internal LBs and public for public LBs"
+  default     = []
 }
 variable "loadbalancer_ingress_rules" {
   description = "Create new security group with these ingress rules for the loadbalancer.  Or use the security_groups var to attach existing group(s)"
