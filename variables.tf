@@ -65,6 +65,7 @@ variable "region" {
 variable "idle_timeout" {
   type        = string
   description = "The time in seconds that the connection is allowed to be idle."
+  default     = null
 }
 variable "existing_bucket_name" {
   type        = string
