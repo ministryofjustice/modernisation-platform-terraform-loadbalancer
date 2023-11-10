@@ -14,6 +14,6 @@ output "load_balancer_arn" {
   value = aws_lb.loadbalancer.arn
 }
 
-output "alb_target_groups" {
+output "lb_target_groups" {
   value = aws_lb_target_group.this
 }
