@@ -17,3 +17,12 @@ output "load_balancer_arn" {
 output "lb_target_groups" {
   value = aws_lb_target_group.this
 }
+
+output "load_balancer_dns_name" {
+  value = aws_lb.loadbalancer.dns_name
+}
+
+output "load_balancer_zone_id" {
+  value = aws_lb.loadbalancer.zone_id
+
+}
