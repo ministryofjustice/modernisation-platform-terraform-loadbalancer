@@ -4,7 +4,7 @@
 
 A Terraform module that creates application loadbalancer (with loadbalancer security groups) in AWS with logging enabled, s3 to store logs and Athena DB to query logs.
 
-An s3 bucket name can be provided in the module by adding the `existing_bucket_name` variable and adding the bucket name. Otherwise, if no bucket exists one will be created and no variable needs to be set in the module.
+An s3 bucket name can be provided in the module by adding the `existing_bucket_name` variable and adding the bucket name. Otherwise, if no bucket exists one will be created and no variable needs to be set in the module. If using an existing bucket the logs will need to be moved with the following folder structure {application_name}/AWSLogs/{account_number}/elasticloadbalancing/ otherwise you will experience errors with the gluecrawler function.
 
 Either pass in existing security group(s) to attach to the load balancer using the `security_groups` variable, or define `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables to create a new security group within the module.
 
@@ -51,6 +51,7 @@ Go to the Athena console and click on Saved Queries https://console.aws.amazon.c
 Click the new saved query that is named `<custom_name>`-create-table and Run it. You only have to do it once.
 
 Try a query like `select * from lb_logs limit 100;`
+
 
 
 ## Usage
