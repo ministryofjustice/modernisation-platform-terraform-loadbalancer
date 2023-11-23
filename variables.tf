@@ -125,5 +125,16 @@ variable "lb_target_groups" {
 variable "log_schedule" {
   type    = string
   default = "cron(15 1 ? * MON *)"
+}
 
+variable "enable_cross_zone_load_balancing" {
+  type        = bool
+  description = "A boolean that determines whether cross zone load balancing is enabled. In application load balancers this feature is always enabled and cannot be disabled. In network and gateway load balancers this feature is disabled by default but can be enabled."
+  default     = false
+}
+
+variable "dns_record_client_routing_policy" {
+  type        = string
+  description = "(optional) Indicates how traffic is distributed among network load balancer Availability Zones only. Possible values are any_availability_zone (client DNS queries are resolved among healthy LB IP addresses across all LB Availability Zones), partial_availability_zone_affinity (85 percent of client DNS queries will favor load balancer IP addresses in their own Availability Zone, while the remaining queries resolve to any healthy zone) and availability_zone_affinity (Client DNS queries will favor load balancer IP address in their own Availability Zone)."
+  default     = "any_availability_zone"
 }
