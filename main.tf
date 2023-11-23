@@ -123,14 +123,16 @@ data "aws_elb_service_account" "default" {}
 resource "aws_lb" "loadbalancer" {
   #checkov:skip=CKV_AWS_150:preventing destroy can be controlled outside of the module
   #checkov:skip=CKV2_AWS_28:WAF is configured outside of the module for more flexibility
-  name                       = "${var.application_name}-lb"
-  internal                   = var.internal_lb
-  load_balancer_type         = var.load_balancer_type
-  security_groups            = length(aws_security_group.lb) > 0 ? [aws_security_group.lb[0].id] : var.security_groups
-  subnets                    = concat(var.subnets, var.public_subnets)
-  enable_deletion_protection = var.enable_deletion_protection
-  idle_timeout               = var.idle_timeout
-  drop_invalid_header_fields = true
+  name                             = "${var.application_name}-lb"
+  internal                         = var.internal_lb
+  load_balancer_type               = var.load_balancer_type
+  security_groups                  = length(aws_security_group.lb) > 0 ? [aws_security_group.lb[0].id] : var.security_groups
+  subnets                          = concat(var.subnets, var.public_subnets)
+  enable_deletion_protection       = var.enable_deletion_protection
+  idle_timeout                     = var.idle_timeout
+  drop_invalid_header_fields       = true
+  enable_cross_zone_load_balancing = var.enable_cross_zone_load_balancing
+  dns_record_client_routing_policy = var.dns_record_client_routing_policy
 
   dynamic "access_logs" {
     for_each = var.access_logs ? [1] : []
