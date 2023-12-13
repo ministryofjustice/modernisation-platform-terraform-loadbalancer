@@ -224,6 +224,9 @@ resource "aws_athena_workgroup" "lb-access-logs" {
   configuration {
     enforce_workgroup_configuration    = true
     publish_cloudwatch_metrics_enabled = true
+    engine_version {
+      selected_engine_version = "Athena engine version 3"
+    }
 
     result_configuration {
       output_location = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/output/" : "s3://${module.s3-bucket[0].bucket.id}/output/"
@@ -368,7 +371,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     ser_de_info {
       name = "app_lb_logs"
       parameters = {
-        "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*)"
+        "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\""
       }
       serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
     }
@@ -378,7 +381,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     }
     columns {
       name = "timestamp"
-      type = "string"
+      type = "timestamp"
     }
     columns {
       name = "elb"
@@ -458,7 +461,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     }
     columns {
       name = "request_creation_time"
-      type = "string"
+      type = "timestamp"
     }
     columns {
       name = "actions_executed"
