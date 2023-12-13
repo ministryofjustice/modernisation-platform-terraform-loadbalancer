@@ -357,7 +357,9 @@ resource "aws_glue_crawler" "ssm_resource_sync" {
 
 resource "aws_glue_catalog_table" "lb_log_table" {
   name = "${var.application_name}-lb-log-table"
-  database_name = "${var.application_name}-database"
+  # database_name = "${var.application_name}-database"
+  database_name = aws_athena_database.lb-access-logs[0].name
+  # database_name = "ELBAccessLogTestFile"
 
   table_type = "EXTERNAL_TABLE"
 
