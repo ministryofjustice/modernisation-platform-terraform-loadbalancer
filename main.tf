@@ -368,9 +368,9 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     ser_de_info {
       name = "app_lb_logs"
       parameters = {
-        "field.delim" = " "
+        "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*)"
       }
-      serialization_library = "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+      serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
     }
     columns {
       name = "type"
@@ -378,7 +378,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     }
     columns {
       name = "timestamp"
-      type = "timestamp"
+      type = "string"
     }
     columns {
       name = "elb"
@@ -458,7 +458,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     }
     columns {
       name = "request_creation_time"
-      type = "timestamp"
+      type = "string"
     }
     columns {
       name = "actions_executed"
