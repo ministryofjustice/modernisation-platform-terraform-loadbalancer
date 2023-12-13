@@ -356,14 +356,14 @@ resource "aws_glue_crawler" "ssm_resource_sync" {
 }
 
 resource "aws_glue_catalog_table" "lb_log_table" {
-  name = "${var.application_name}-lb-log-table"
+  name          = "${var.application_name}-lb-log-table"
   database_name = aws_athena_database.lb-access-logs[0].name
 
   table_type = "EXTERNAL_TABLE"
 
   storage_descriptor {
-    location = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/"
-    input_format = "org.apache.hadoop.mapred.TextInputFormat"
+    location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/"
+    input_format  = "org.apache.hadoop.mapred.TextInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
     ser_de_info {
       serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
@@ -377,7 +377,7 @@ resource "aws_glue_catalog_table" "lb_log_table" {
       name = "time"
       type = "string"
     }
-    
+
     columns {
       name = "elb"
       type = "string"
@@ -476,7 +476,7 @@ resource "aws_glue_catalog_table" "lb_log_table" {
     columns {
       name = "trace_id"
       type = "string"
-    } 
+    }
 
     columns {
       name = "domain_name"
@@ -486,7 +486,7 @@ resource "aws_glue_catalog_table" "lb_log_table" {
     columns {
       name = "chosen_cert_arn"
       type = "string"
-    } 
+    }
 
     columns {
       name = "matched_rule_priority"
