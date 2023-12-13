@@ -69,7 +69,7 @@ variable "idle_timeout" {
 }
 variable "existing_bucket_name" {
   type        = string
-  default     = null
+  default     = ""
   description = "The name of the existing bucket name. If no bucket is provided one will be created for them."
 }
 variable "force_destroy_bucket" {
