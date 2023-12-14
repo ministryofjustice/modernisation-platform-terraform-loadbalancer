@@ -306,6 +306,12 @@ data "aws_iam_policy_document" "glue_s3" {
   }
 }
 
+resource "aws_iam_policy" "glue_s3" {
+  count  = var.access_logs ? 1 : 0
+  name   = "glue_s3_policy"
+  policy = data.aws_iam_policy_document.glue_s3[count.index].json
+}
+
 resource "aws_iam_role_policy_attachment" "glue_s3" {
   count      = var.access_logs ? 1 : 0
   role       = aws_iam_role.glue[count.index].name
