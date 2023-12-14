@@ -308,7 +308,7 @@ data "aws_iam_policy_document" "glue_s3" {
 
 resource "aws_iam_policy" "glue_s3" {
   count  = var.access_logs ? 1 : 0
-  name   = "glue_s3_policy"
+  name   = "glue-s3-${var.application_name}"
   policy = data.aws_iam_policy_document.glue_s3[count.index].json
 }
 
