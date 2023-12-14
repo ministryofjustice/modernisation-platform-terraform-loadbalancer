@@ -189,7 +189,6 @@ resource "aws_security_group" "lb" {
   )
 }
 
-
 resource "aws_athena_database" "lb-access-logs" {
   count  = var.access_logs ? 1 : 0
   name   = replace("${var.application_name}-lb-access-logs", "-", "_") # dashes not allowed in name
@@ -198,24 +197,6 @@ resource "aws_athena_database" "lb-access-logs" {
     encryption_option = "SSE_S3"
   }
 }
-
-# resource "aws_athena_named_query" "main" {
-#   count     = var.access_logs ? 1 : 0
-#   name      = "${var.application_name}-create-table"
-#   database  = aws_athena_database.lb-access-logs[0].name
-#   workgroup = aws_athena_workgroup.lb-access-logs[0].id
-
-#   query = templatefile(
-#     "${path.module}/templates/create_table.sql", <== delete this too
-#     {
-#       bucket           = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
-#       account_id       = var.account_number
-#       region           = var.region
-#       application_name = var.application_name
-#       database         = aws_athena_database.lb-access-logs[0].name
-#     }
-#   )
-# }
 
 resource "aws_athena_workgroup" "lb-access-logs" {
   count = var.access_logs ? 1 : 0
@@ -293,71 +274,51 @@ resource "aws_lb_target_group_attachment" "this" {
   port             = coalesce(each.value.attachment_port, each.value.port)
 }
 
-# Glue crawler to update Athena Table
-# Role for crawler
-# resource "aws_iam_role" "lb_glue_crawler" {
-#   count              = var.access_logs ? 1 : 0
-#   name               = "ssm-glue-crawler"
-#   assume_role_policy = data.aws_iam_policy_document.lb_glue_crawler_assume.json
-# }
+# Glue Permissions
+resource "aws_iam_role" "glue" {
+  count              = var.access_logs ? 1 : 0
+  name               = "glue-${var.application_name}"
+  assume_role_policy = data.aws_iam_policy_document.glue_assume[count.index].json
+}
 
-# data "aws_iam_policy_document" "lb_glue_crawler_assume" {
-#   statement {
-#     effect  = "Allow"
-#     actions = ["sts:AssumeRole"]
+data "aws_iam_policy_document" "glue_assume" {
+  count              = var.access_logs ? 1 : 0
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
 
-#     principals {
-#       type        = "Service"
-#       identifiers = ["glue.amazonaws.com"]
-#     }
-#   }
-# }
+    principals {
+      type        = "Service"
+      identifiers = ["glue.amazonaws.com"]
+    }
+  }
+}
 
-# resource "aws_iam_policy" "lb_glue_crawler" {
-#   count  = var.access_logs ? 1 : 0
-#   name   = "LbGlueCrawler"
-#   policy = data.aws_iam_policy_document.lb_glue_crawler[count.index].json
-# }
+data "aws_iam_policy_document" "glue_s3" {
+  count = var.access_logs ? 1 : 0
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject"
+    ]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+  }
+}
 
-# data "aws_iam_policy_document" "lb_glue_crawler" {
-#   count = var.access_logs ? 1 : 0
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "s3:GetObject",
-#       "s3:PutObject"
-#     ]
-#     resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
-#   }
-# }
+resource "aws_iam_role_policy_attachment" "glue_s3" {
+  count      = var.access_logs ? 1 : 0
+  role       = aws_iam_role.glue[count.index].name
+  policy_arn = aws_iam_policy.glue_s3[count.index].arn
+}
 
-# Glue Crawler Policy
-# resource "aws_iam_role_policy_attachment" "lb_glue_crawler" {
-#   count      = var.access_logs ? 1 : 0
-#   role       = aws_iam_role.lb_glue_crawler[count.index].name
-#   policy_arn = aws_iam_policy.lb_glue_crawler[count.index].arn
-# }
+resource "aws_iam_role_policy_attachment" "glue_service" {
+  count      = var.access_logs ? 1 : 0
+  role       = aws_iam_role.glue[count.index].id
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
 
-# resource "aws_iam_role_policy_attachment" "lb_glue_service" {
-#   count      = var.access_logs ? 1 : 0
-#   role       = aws_iam_role.lb_glue_crawler[count.index].id
-#   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
-# }
-
-# Glue Crawler
-# resource "aws_glue_crawler" "ssm_resource_sync" {
-#   #checkov:skip=CKV_AWS_195
-#   count         = var.access_logs ? 1 : 0
-#   database_name = aws_athena_database.lb-access-logs[0].name
-#   name          = "lb_resource_sync"
-#   role          = aws_iam_role.lb_glue_crawler[count.index].arn
-#   schedule      = var.log_schedule
-
-#   s3_target {
-#     path = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
-#   }
-# }
-
+# Catalog Tables
 resource "aws_glue_catalog_table" "application_lb_logs" {
   name          = "${var.application_name}-application-lb-logs"
   database_name = aws_athena_database.lb-access-logs[0].name
