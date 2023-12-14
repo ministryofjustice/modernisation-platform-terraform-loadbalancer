@@ -354,23 +354,24 @@ resource "aws_glue_crawler" "ssm_resource_sync" {
   schedule      = var.log_schedule
 
   s3_target {
-    path = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/"
+    path = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
   }
 }
 
-resource "aws_glue_catalog_table" "app_lb_logs" {
-  name          = "${var.application_name}-app-lb-logs"
+resource "aws_glue_catalog_table" "application_lb_logs" {
+  name          = "${var.application_name}-application-lb-logs"
   database_name = aws_athena_database.lb-access-logs[0].name
 
   table_type = "EXTERNAL_TABLE"
 
   storage_descriptor {
-    location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/"
+    location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
     input_format  = "org.apache.hadoop.mapred.TextInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
     ser_de_info {
-      name = "app_lb_logs"
+      name = "application_lb_logs"
       parameters = {
+        "serialization.format" = "1",
         "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) ([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}):([0-9]+) ([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}):([0-9]+) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\""
       }
       serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
@@ -380,7 +381,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
       type = "string"
     }
     columns {
-      name = "timestamp"
+      name = "time"
       type = "string"
     }
     columns {
@@ -497,6 +498,123 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     }
     columns {
       name = "classification_reason"
+      type = "string"
+    }
+  }
+}
+
+resource "aws_glue_catalog_table" "network_lb_logs" {
+  name          = "${var.application_name}-network-lb-logs"
+  database_name = aws_athena_database.lb-access-logs[0].name
+
+  table_type = "EXTERNAL_TABLE"
+
+  storage_descriptor {
+    location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
+    input_format  = "org.apache.hadoop.mapred.TextInputFormat"
+    output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+    ser_de_info {
+      name = "network_lb_logs"
+      parameters = {
+        "serialization.format" = "1",
+        "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*):([0-9]*) ([^ ]*):([0-9]*) ([-.0-9]*) ([-.0-9]*) ([-0-9]*) ([-0-9]*) ([-0-9]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*)$"
+      }
+      serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
+    }
+    columns {
+      name = "type"
+      type = "string"
+    }
+    columns {
+      name = "version"
+      type = "string"
+    }
+    columns {
+      name = "time"
+      type = "string"
+    }
+    columns {
+      name = "elb"
+      type = "string"
+    }
+    columns {
+      name = "listener_id"
+      type = "string"
+    }
+    columns {
+      name = "client_ip"
+      type = "string"
+    }
+    columns {
+      name = "client_port"
+      type = "int"
+    }
+    columns {
+      name = "target_ip"
+      type = "string"
+    }
+    columns {
+      name = "target_port"
+      type = "int"
+    }
+    columns {
+      name = "tcp_connection_time"
+      type = "double"
+    }
+    columns {
+      name = "tls_handshake_time"
+      type = "double"
+    }
+    columns {
+      name = "received_bytes"
+      type = "bigint"
+    }
+    columns {
+      name = "sent_bytes"
+      type = "bigint"
+    }
+    columns {
+      name = "incoming_tls_alert"
+      type = "int"
+    }
+    columns {
+      name = "cert_arn"
+      type = "string"
+    }
+    columns {
+      name = "certificate_serial"
+      type = "string"
+    }
+    columns {
+      name = "tls_cipher_suite"
+      type = "string"
+    }
+    columns {
+      name = "tls_protocol_version"
+      type = "string"
+    }
+    columns {
+      name = "tls_named_group"
+      type = "string"
+    }
+    columns {
+      name = "domain_name"
+      type = "string"
+    }
+    columns {
+      name = "alpn_fe_protocol"
+      type = "string"
+    }
+    columns {
+      name = "alpn_be_protocol"
+      type = "string"
+    }
+    columns {
+      name = "alpn_client_preference_list"
+      type = "string"
+    }
+    columns {
+      name = "tls_connection_creation_time"
       type = "string"
     }
   }
