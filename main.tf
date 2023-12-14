@@ -371,7 +371,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     ser_de_info {
       name = "app_lb_logs"
       parameters = {
-        "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\""
+        "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):([0-9]+) ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):([0-9]+) ([^ }*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\""
       }
       serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
     }
@@ -381,7 +381,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     }
     columns {
       name = "timestamp"
-      type = "timestamp"
+      type = "string"
     }
     columns {
       name = "elb"
@@ -392,8 +392,16 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
       type = "string"
     }
     columns {
+      name = "client_port"
+      type = "int"
+    }
+    columns {
       name = "target_ip"
       type = "string"
+    }
+    columns {
+      name = "target_port"
+      type = "int"
     }
     columns {
       name = "request_processing_time"
@@ -461,7 +469,7 @@ resource "aws_glue_catalog_table" "app_lb_logs" {
     }
     columns {
       name = "request_creation_time"
-      type = "timestamp"
+      type = "string"
     }
     columns {
       name = "actions_executed"
