@@ -8,7 +8,7 @@ data "aws_vpc" "shared" {
 
 module "s3-bucket" {
   count  = var.existing_bucket_name == "" && var.access_logs ? 1 : 0
-  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=8688bc15a08fbf5a4f4eef9b7433c5a417df8df1" # v7.0.0
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=7.1.0"
 
   providers = {
     aws.bucket-replication = aws.bucket-replication
@@ -326,6 +326,7 @@ resource "aws_iam_role_policy_attachment" "glue_service" {
 
 # Catalog Tables
 resource "aws_glue_catalog_table" "application_lb_logs" {
+  count         = var.access_logs && var.load_balancer_type == "application" ? 1 : 0
   name          = "${var.application_name}-application-lb-logs"
   database_name = aws_athena_database.lb-access-logs[0].name
 
@@ -471,6 +472,7 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
 }
 
 resource "aws_glue_catalog_table" "network_lb_logs" {
+  count         = var.access_logs && var.load_balancer_type == "network" ? 1 : 0
   name          = "${var.application_name}-network-lb-logs"
   database_name = aws_athena_database.lb-access-logs[0].name
 
