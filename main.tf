@@ -332,6 +332,18 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
 
   table_type = "EXTERNAL_TABLE"
 
+  partition_keys {
+    name = "year"
+    type = "string"
+  }
+  partition_keys {
+    name = "month"
+    type = "string"
+  }
+  partition_keys {
+    name = "day"
+    type = "string"
+  }
   storage_descriptor {
     location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
     input_format  = "org.apache.hadoop.mapred.TextInputFormat"
@@ -477,6 +489,19 @@ resource "aws_glue_catalog_table" "network_lb_logs" {
   database_name = aws_athena_database.lb-access-logs[0].name
 
   table_type = "EXTERNAL_TABLE"
+
+  partition_keys {
+    name = "year"
+    type = "string"
+  }
+  partition_keys {
+    name = "month"
+    type = "string"
+  }
+  partition_keys {
+    name = "day"
+    type = "string"
+  }
 
   storage_descriptor {
     location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
