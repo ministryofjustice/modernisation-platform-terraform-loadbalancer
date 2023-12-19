@@ -346,14 +346,14 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
   }
 
   parameters = {
-    "projection.enabled"           = "true"
-    "projection.year.type"         = "integer"
-    "projection.year.range"        = "2023,2024"
-    "projection.month.type"        = "integer"
-    "projection.month.range"       = "1,12"
-    "projection.day.type"          = "integer"
-    "projection.day.range"         = "1,31"
-    "storage.location.template"    = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${year}/$${month}/$${day}" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${year}/$${month}/$${day}"
+    "projection.enabled"        = "true"
+    "projection.year.type"      = "integer"
+    "projection.year.range"     = "2023,2024"
+    "projection.month.type"     = "integer"
+    "projection.month.range"    = "1,12"
+    "projection.day.type"       = "integer"
+    "projection.day.range"      = "1,31"
+    "storage.location.template" = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${year}/$${month}/$${day}" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${year}/$${month}/$${day}"
   }
   storage_descriptor {
     location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
