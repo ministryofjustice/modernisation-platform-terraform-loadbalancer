@@ -354,7 +354,7 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
       name = "application_lb_logs"
       parameters = {
         "serialization.format" = "1",
-        "input.regex"          = "([^ ]*) ([^ ]*) ([^ ]*) ([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}):([0-9]+) ([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}):([0-9]+) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([^ ]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\""
+        "input.regex"          = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*):([0-9]*) ([^ ]*)[:-]([0-9]*) ([-.0-9]*) ([-.0-9]*) ([-.0-9]*) (|[-0-9]*) (-|[-0-9]*) ([-0-9]*) ([-0-9]*) \"([^ ]*) (.*) (- |[^ ]*)\" \"([^\"]*)\" ([A-Z0-9-_]+) ([A-Za-z0-9.-]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([-.0-9]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^ ]*)\" \"([^s]+?)\" \"([^s]+)\" \"([^ ]*)\" \"([^ ]*)\""
       }
       serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
     }
@@ -408,14 +408,22 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
     }
     columns {
       name = "received_bytes"
-      type = "int"
+      type = "bigint"
     }
     columns {
       name = "sent_bytes"
-      type = "int"
+      type = "bigint"
     }
     columns {
-      name = "request"
+      name = "request_verb"
+      type = "string"
+    }
+    columns {
+      name = "request_url"
+      type = "string"
+    }
+    columns {
+      name = "request_proto"
       type = "string"
     }
     columns {
