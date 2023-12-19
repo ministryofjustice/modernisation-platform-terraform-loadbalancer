@@ -332,6 +332,11 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
 
   table_type = "EXTERNAL_TABLE"
 
+  partition_keys {
+    name = "day"
+    type = "string"
+  }
+
   parameters = {
     "projection.enabled"           = "true"
     "projection.day.type"          = "date"
