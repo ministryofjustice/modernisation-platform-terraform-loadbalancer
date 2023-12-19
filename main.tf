@@ -333,27 +333,18 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
   table_type = "EXTERNAL_TABLE"
 
   partition_keys {
-    name = "year"
-    type = "string"
-  }
-  partition_keys {
-    name = "month"
-    type = "string"
-  }
-  partition_keys {
     name = "day"
     type = "string"
   }
 
   parameters = {
     "projection.enabled"        = "true"
-    "projection.year.type"      = "integer"
-    "projection.year.range"     = "2023,2024"
-    "projection.month.type"     = "integer"
-    "projection.month.range"    = "1,12"
-    "projection.day.type"       = "integer"
-    "projection.day.range"      = "1,31"
-    "storage.location.template" = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${year}/$${month}/$${day}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${year}/$${month}/$${day}/"
+    "projection.day.format"     = "yyyy/MM/dd"
+    "projection.day.interval"   = "1"
+    "projection.day.interval.unit" = "DAYS"
+    "projection.day.type"       = "date"
+    "projection.day.range"      = "2023/01/01,NOW"
+    "storage.location.template" = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${day}" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${day}"
   }
   storage_descriptor {
     location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
@@ -472,7 +463,7 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
       type = "string"
     }
     columns {
-      name = "error_reason"
+      name = "lambda_error_reason"
       type = "string"
     }
     columns {
