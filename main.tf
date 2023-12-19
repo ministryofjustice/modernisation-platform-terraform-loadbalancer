@@ -338,13 +338,13 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
   }
 
   parameters = {
-    "projection.enabled"        = "true"
-    "projection.day.format"     = "yyyy/MM/dd"
-    "projection.day.interval"   = "1"
+    "projection.enabled"           = "true"
+    "projection.day.format"        = "yyyy/MM/dd"
+    "projection.day.interval"      = "1"
     "projection.day.interval.unit" = "DAYS"
-    "projection.day.type"       = "date"
-    "projection.day.range"      = "2023/01/01,NOW"
-    "storage.location.template" = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${day}" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${day}"
+    "projection.day.type"          = "date"
+    "projection.day.range"         = "2023/01/01,NOW"
+    "storage.location.template"    = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${day}" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${day}"
   }
   storage_descriptor {
     location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/"
