@@ -66,7 +66,7 @@ module "s3-bucket" {
 data "aws_iam_policy_document" "network_lb_bucket_policy" {
   count = var.access_logs && var.load_balancer_type == "network" ? 1 : 0
   statement {
-    effect = "Allos"
+    effect = "Allow"
     actions = [
       "s3:GetBucketAcl",
     ]
