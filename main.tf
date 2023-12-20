@@ -13,8 +13,8 @@ module "s3-bucket" {
   providers = {
     aws.bucket-replication = aws.bucket-replication
   }
-  bucket_prefix       = "${var.application_name}-lb-access-logs"
-  bucket_policy       = [data.aws_iam_policy_document.bucket_policy[0].json]
+  bucket_prefix = "${var.application_name}-lb-access-logs"
+  bucket_policy = [data.aws_iam_policy_document.bucket_policy[0].json]
   # bucket_policy       = var.load_balancer_type == "application" ? [data.aws_iam_policy_document.bucket_policy[0].json] : [data.aws_iam_policy_document.network_lb_bucket_policy[0].json]
   replication_enabled = false
   versioning_enabled  = var.s3_versioning
@@ -123,13 +123,13 @@ data "aws_iam_policy_document" "bucket_policy" {
     ]
     resources = [var.existing_bucket_name != ""
       ? [
-          "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
-          "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*" 
-        ]  
+        "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
+      ]
       : [
-          "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
-          "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
-        ]
+        "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
+      ]
     ]
     principals {
       type        = "AWS"
@@ -138,7 +138,7 @@ data "aws_iam_policy_document" "bucket_policy" {
   }
   statement {
     effect = "Allow"
-    sid = "AWSLogDeliveryWrite"
+    sid    = "AWSLogDeliveryWrite"
 
     principals {
       type        = "Service"
@@ -151,13 +151,13 @@ data "aws_iam_policy_document" "bucket_policy" {
 
     resources = [var.existing_bucket_name != ""
       ? [
-          "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
-          "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*" 
-        ]  
+        "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
+      ]
       : [
-          "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
-          "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
-        ]
+        "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
+      ]
     ]
 
     condition {
@@ -171,7 +171,7 @@ data "aws_iam_policy_document" "bucket_policy" {
   }
 
   statement {
-    sid = "AWSLogDeliveryAclCheck"
+    sid    = "AWSLogDeliveryAclCheck"
     effect = "Allow"
 
     principals {
@@ -374,15 +374,15 @@ data "aws_iam_policy_document" "glue_s3" {
       "s3:GetObject",
       "s3:PutObject"
     ]
-    resources = [var.existing_bucket_name != "" 
+    resources = [var.existing_bucket_name != ""
       ? [
-          "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
-          "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
-        ]
+        "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
+      ]
       : [
-          "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
-          "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
-        ]
+        "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
+      ]
     ]
   }
 }
