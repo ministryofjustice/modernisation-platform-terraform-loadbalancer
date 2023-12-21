@@ -229,6 +229,7 @@ If you're looking to raise an issue with this module, please create a new issue 
 | <a name="input_region"></a> [region](#input\_region) | AWS Region where resources are to be created | `string` | n/a | yes |
 | <a name="input_s3_versioning"></a> [s3\_versioning](#input\_s3\_versioning) | A boolean that determines whether s3 will have versioning | `bool` | `true` | no |
 | <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | List of existing security group ids to attach to the load balancer.  You can use this instead of loadbalancer\_ingress\_rules,loadbalancer\_egress\_rules vars | `list(string)` | `null` | no |
+| <a name="input_sse_algorithm"></a> [sse\_algorithm](#input\_sse\_algorithm) | The server-side encryption algorithm to use for the module created S3 bucket. Note that Network Load balancers do not support AWS Managed KMS keys. See the NLB loadbalancer documentation for more information. | `string` | `"AES256"` | no |
 | <a name="input_subnets"></a> [subnets](#input\_subnets) | List of subnet IDs. Typically use private subnet for internal LBs and public for public LBs | `list(string)` | `[]` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Common tags to be used by all resources | `map(string)` | n/a | yes |
 | <a name="input_vpc_all"></a> [vpc\_all](#input\_vpc\_all) | The full name of the VPC (including environment) used to create resources | `string` | n/a | yes |
