@@ -121,7 +121,7 @@ data "aws_iam_policy_document" "bucket_policy" {
     actions = [
       "s3:PutObject"
     ]
-    resources = [var.existing_bucket_name != ""
+    resources = flatten([var.existing_bucket_name != ""
       ? [
         "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
         "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
@@ -130,7 +130,7 @@ data "aws_iam_policy_document" "bucket_policy" {
         "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
         "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
       ]
-    ]
+    ])
     principals {
       type        = "AWS"
       identifiers = [data.aws_elb_service_account.default.arn]
@@ -149,7 +149,7 @@ data "aws_iam_policy_document" "bucket_policy" {
       "s3:PutObject"
     ]
 
-    resources = [var.existing_bucket_name != ""
+    resources = flatten([var.existing_bucket_name != ""
       ? [
         "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
         "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
@@ -158,7 +158,7 @@ data "aws_iam_policy_document" "bucket_policy" {
         "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
         "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
       ]
-    ]
+    ])
 
     condition {
       test     = "StringEquals"
@@ -374,7 +374,7 @@ data "aws_iam_policy_document" "glue_s3" {
       "s3:GetObject",
       "s3:PutObject"
     ]
-    resources = [var.existing_bucket_name != ""
+    resources = flatten([var.existing_bucket_name != ""
       ? [
         "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
         "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
@@ -383,7 +383,7 @@ data "aws_iam_policy_document" "glue_s3" {
         "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
         "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
       ]
-    ]
+    ])
   }
 }
 
