@@ -367,7 +367,7 @@ data "aws_iam_policy_document" "glue_assume" {
 }
 
 data "aws_iam_policy_document" "glue_s3" {
-  count = var.access_logs && var.load_balancer_type == "application" ? 1 : 0
+  count = var.access_logs ? 1 : 0
   statement {
     effect = "Allow"
     actions = [
