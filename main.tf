@@ -19,6 +19,7 @@ module "s3-bucket" {
   replication_enabled = false
   versioning_enabled  = var.s3_versioning
   force_destroy       = var.force_destroy_bucket
+  sse_algorithm       = var.sse_algorithm
   lifecycle_rule = [
     {
       id      = "main"
@@ -387,24 +388,10 @@ data "aws_iam_policy_document" "glue_s3" {
   }
 }
 
-# data "aws_iam_policy_document" "network_lb_glue_s3" {
-#   count = var.access_logs && var.load_balancer_type == "network" ? 1 : 0
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "s3:GetObject",
-#       "s3:PutObject"
-#     ]
-#     resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"]
-#   }
-
-# }
-
 resource "aws_iam_policy" "glue_s3" {
   count  = var.access_logs && length(data.aws_iam_policy_document.glue_s3) > 0 ? 1 : 0
   name   = "glue-s3-${var.application_name}"
   policy = data.aws_iam_policy_document.glue_s3[count.index].json
-  # policy = var.load_balancer_type == "application" ? data.aws_iam_policy_document.glue_s3[count.index].json : data.aws_iam_policy_document.network_lb_glue_s3[count.index].json
 }
 
 resource "aws_iam_role_policy_attachment" "glue_s3" {
