@@ -136,7 +136,6 @@ variable "dns_record_client_routing_policy" {
 }
 
 variable "sse_algorithm" {
-  type        = optional(string)
-  description = "The server-side encryption algorithm to use for the module created S3 bucket. Note that Network Load balancers do not support AWS Managed KMS keys. See the NLB loadbalancer documentation for more information."
-  default     = "AES256"
+  type        = string
+  description = "The server-side encryption algorithm to use for the module created S3 bucket. Note that Network Load balancers do not support AWS Managed KMS keys. For NLB S3 buckets you must specify this value as AES256"
 }
