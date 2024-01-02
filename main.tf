@@ -19,7 +19,7 @@ module "s3-bucket" {
   replication_enabled = false
   versioning_enabled  = var.s3_versioning
   force_destroy       = var.force_destroy_bucket
-  sse_algorithm       = var.sse_algorithm
+  sse_algorithm       = var.load_balancer_type == "network" ? "AES256" : "aws:kms"
   lifecycle_rule = [
     {
       id      = "main"
