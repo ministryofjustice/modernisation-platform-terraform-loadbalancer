@@ -14,8 +14,8 @@ module "s3-bucket" {
     aws.bucket-replication = aws.bucket-replication
   }
   bucket_prefix = "${var.application_name}-lb-access-logs"
-  bucket_policy = [data.aws_iam_policy_document.bucket_policy[0].json]
-  # bucket_policy       = var.load_balancer_type == "application" ? [data.aws_iam_policy_document.bucket_policy[0].json] : [data.aws_iam_policy_document.network_lb_bucket_policy[0].json]
+  # bucket_policy = [data.aws_iam_policy_document.bucket_policy[0].json]
+  bucket_policy       = var.load_balancer_type == "application" ? [data.aws_iam_policy_document.bucket_policy[0].json] : [data.aws_iam_policy_document.network_lb_bucket_policy[0].json]
   replication_enabled = false
   versioning_enabled  = var.s3_versioning
   force_destroy       = var.force_destroy_bucket
@@ -64,56 +64,56 @@ module "s3-bucket" {
   tags = var.tags
 }
 
-# data "aws_iam_policy_document" "network_lb_bucket_policy" {
-#   count = var.access_logs && var.load_balancer_type == "network" ? 1 : 0
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "s3:GetBucketAcl",
-#     ]
-#     resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}" : "${module.s3-bucket[0].bucket.arn}"]
-#     principals {
-#       type = "Service"
-#       identifiers = ["delivery.logs.amazonaws.com"]
-#     }
-#     condition {
-#       test = "StringEquals"
-#       variable = "aws:SourceAccount"
-#       values = ["${var.account_number}"]
-#     }
-#     condition {
-#       test = "ArnLike"
-#       variable = "aws:SourceArn"
-#       values = ["arn:aws:logs:${var.region}:${var.account_number}:*"]
-#     }    
-#   }
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "s3:PutObject"
-#     ]
-#     resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"]
-#     principals {
-#       type        = "Service"
-#       identifiers = ["delivery.logs.amazonaws.com"]
-#     }
-#     condition {
-#       test = "StringEquals"
-#       variable = "s3:x-amz-acl"
-#       values = ["bucket-owner-full-control"]
-#     }
-#     condition {
-#       test = "StringEquals"
-#       variable = "aws:SourceAccount"
-#       values = ["${var.account_number}"]
-#     }
-#     condition {
-#       test = "ArnLike"
-#       variable = "aws:SourceArn"
-#       values = ["arn:aws:logs:${var.region}:${var.account_number}:*"]
-#     }
-#   }
-# }
+data "aws_iam_policy_document" "network_lb_bucket_policy" {
+  count = var.access_logs && var.load_balancer_type == "network" ? 1 : 0
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetBucketAcl",
+    ]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}" : "${module.s3-bucket[0].bucket.arn}"]
+    principals {
+      type = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
+    condition {
+      test = "StringEquals"
+      variable = "aws:SourceAccount"
+      values = ["${var.account_number}"]
+    }
+    condition {
+      test = "ArnLike"
+      variable = "aws:SourceArn"
+      values = ["arn:aws:logs:${var.region}:${var.account_number}:*"]
+    }    
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject"
+    ]
+    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"]
+    principals {
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
+    condition {
+      test = "StringEquals"
+      variable = "s3:x-amz-acl"
+      values = ["bucket-owner-full-control"]
+    }
+    condition {
+      test = "StringEquals"
+      variable = "aws:SourceAccount"
+      values = ["${var.account_number}"]
+    }
+    condition {
+      test = "ArnLike"
+      variable = "aws:SourceArn"
+      values = ["arn:aws:logs:${var.region}:${var.account_number}:*"]
+    }
+  }
+}
 
 data "aws_iam_policy_document" "bucket_policy" {
   count = var.access_logs ? 1 : 0
