@@ -52,6 +52,14 @@ Click the new saved query that is named `<custom_name>`-create-table and Run it.
 
 Try a query like `select * from lb_logs limit 100;`
 
+## Module created S3 access_logs bucket
+
+If you want to use this lb module to create the s3 bucket for access logging you need to set access_logs = true when the loadbalancer is first created. If you set access_logs = false and then later change it to true the module will not create the bucket for you and the terraform apply will fail.
+
+There is a Load Balancer validation step that checks that the bucket is writable and this will fail, likely because the check runs before the permissions have been applied to the bucket. Where the lb module creates the bucket from scratch at lb creation time this doesn't occur as terraform's dependency management ensures the bucket is created with the correct permissions before the lb.
+
+If you can't re-create the loadbalancer from scratch you need to create an external bucket yourself and then set the existing_bucket_name variable to the name of the bucket you created as well as access_logs = true. See the [External buckets](#external-buckets) section for more information.
+
 ## External buckets
 
 If you decide to use externally created buckets they need to have been created and have appropriate permissions applied to them BEFORE `access_logs = true` and `existing_bucket_name` values are added to the lb code. If you add these values before the bucket is created you will get an error because the lb module will run a check to see if the s3 bucket is writeable and if it is not it will fail.
@@ -64,15 +72,67 @@ So the steps are:
 
 ### External bucket permissions
 
-For simplicity the bucket can be created with the following policy attached to it. This applies whether the loadbalancer is an "application" or "network" loadbalancer.
+For simplicity the bucket can be created with the following policy attached to it. This applies whether the loadbalancer is an "application" or "network" loadbalancer. This uses the bucket_policy_v2 implementation using the s3_bucket module:
 
-<!-- 
-TODO: Permissions for externally created buckets need to go here.
--->
+```hcl
+  public-lb-logs-bucket = {
+    sse_algorithm = "AES256" # required for Network Loadbalancers
+    bucket_policy_v2 = [
+      {
+        effect = "Allow"
+        actions = [
+          "s3:PutObject",
+        ]
+        principals = {
+          identifiers = ["arn:aws:iam::652711504416:root"]
+          type        = "AWS"
+        }
+      },
+      {
+        effect = "Allow"
+        actions = [
+          "s3:PutObject"
+        ]
+        principals = {
+          identifiers = ["delivery.logs.amazonaws.com"]
+          type        = "Service"
+        }
 
-<!-- 
-IMPORTANT: check the "aws_glue_catalog_table" "network_lb_logs" storage_descriptor "location" value is correct for the network LB logs because it is different to the application LB logs.
--->
+        conditions = [
+          {
+            test     = "StringEquals"
+            variable = "s3:x-amz-acl"
+            values   = ["bucket-owner-full-control"]
+          }
+        ]
+      },
+      {
+        effect = "Allow"
+        actions = [
+          "s3:GetBucketAcl"
+        ]
+        principals = {
+          identifiers = ["delivery.logs.amazonaws.com"]
+          type        = "Service"
+        }
+      }
+    ]
+    iam_policies = module.baseline_presets.s3_iam_policies
+  }
+```
+
+If you want to see exactly what policies are needed for each then refer to [NLB Requirements](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-access-logs.html#access-logging-bucket-requirements) and [ALB Requirements](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html#attach-bucket-policy)
+
+## Network Loadbalancer caveats
+
+* Access logs are created only if the load balancer has a TLS listener and they contain information only about TLS requests.
+* Network loadbalancers only support SSE-S3 encryption for access logs, not aws:kms (AWS managed keys). 
+* They can support customer managed keys but this is not currently supported by this module.
+* No "verify bucket permissions" test file is created in the relevant bucket, only that the terraform apply step will fail with a validation error if the permissions and the bucket encryption parameters are not correct.
+
+## Application Loadbalancer caveats
+
+* It's worth noting that Application LB's will create a test file in the S3 bucket to verify that the bucket permissions are correct.
 
 ## Usage
 
