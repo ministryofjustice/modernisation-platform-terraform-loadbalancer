@@ -45,7 +45,7 @@ locals {
 
 Loadbalancer target groups and listeners need to be created separately.
 
-The use of "aws_glue_catalog_table" reources for application and network loadbalancers means that logs appearing in the S3 bucket will be available to query in Athena.
+The use of "aws_glue_catalog_table" resources for application and network loadbalancers means that logs appearing in the S3 bucket will be available to query via Athena without having to carry out any manual Athena config steps.
 
 ## Module created S3 access_logs bucket
 
