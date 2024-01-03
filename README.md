@@ -45,26 +45,23 @@ locals {
 
 Loadbalancer target groups and listeners need to be created separately.
 
-To run queries in Athena do the following:
-Go to the Athena console and click on Saved Queries https://console.aws.amazon.com/athena/saved-queries/home
-
-Click the new saved query that is named `<custom_name>`-create-table and Run it. You only have to do it once.
-
-Try a query like `select * from lb_logs limit 100;`
+The use of "aws_glue_catalog_table" reources for application and network loadbalancers means that logs appearing in the S3 bucket will be available to query in Athena.
 
 ## Module created S3 access_logs bucket
 
-If you want to use this lb module to create the s3 bucket for access logging you need to set access_logs = true when the loadbalancer is first created. If you set access_logs = false and then later change it to true the module will not create the bucket for you and the terraform apply will fail.
+By default the loadbalancer will set up an access_logs bucket for you, unless you set access_logs = false initially for testing or some other reason. Setting this back to true after the lb has been deployed will then create the bucket for you. The reason for the 'depends_on' here is that without the module.s3-bucket resource being created first, the module.lb resource will fail with a validation error.
 
-There is a Load Balancer validation step that checks that the bucket is writable and this will fail, likely because the check runs before the permissions have been applied to the bucket. Where the lb module creates the bucket from scratch at lb creation time this doesn't occur as terraform's dependency management ensures the bucket is created with the correct permissions before the lb.
-
-If you can't re-create the loadbalancer from scratch you need to create an external bucket yourself and then set the existing_bucket_name variable to the name of the bucket you created as well as access_logs = true. See the [External buckets](#external-buckets) section for more information.
+```hcl
+  depends_on = [
+    module.s3-bucket
+  ]
+```
 
 ## External buckets
 
 If you decide to use externally created buckets they need to have been created and have appropriate permissions applied to them BEFORE `access_logs = true` and `existing_bucket_name` values are added to the lb code. If you add these values before the bucket is created you will get an error because the lb module will run a check to see if the s3 bucket is writeable and if it is not it will fail.
 
-So the steps are:
+So to use `external_bucket_name` the deployment steps are:
 
 1. Set `access_logs = false` in the lb create code & create the lb
 2. Create the bucket - making sure the appropriate permissions are applied
