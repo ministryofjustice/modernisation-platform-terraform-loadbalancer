@@ -171,7 +171,7 @@ resource "aws_lb" "loadbalancer" {
     },
   )
 
-  depends_on = [ module.s3-bucket ]
+  depends_on = [module.s3-bucket]
 }
 
 resource "aws_security_group" "lb" {
