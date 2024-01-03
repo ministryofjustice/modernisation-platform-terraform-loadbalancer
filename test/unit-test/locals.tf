@@ -36,9 +36,5 @@ locals {
 
   is_live       = [substr(terraform.workspace, length(local.application_name), length(terraform.workspace)) == "-production" || substr(terraform.workspace, length(local.application_name), length(terraform.workspace)) == "-preproduction" ? "live" : "non-live"]
   provider_name = "core-vpc-${local.environment}"
-  lb_target_groups = {
-    https-80 = {
-      port = 80
-    }
-  }
+  lb_target_groups = {}
 }
