@@ -2,9 +2,9 @@
 
 [![repo standards badge](https://img.shields.io/endpoint?labelColor=231f20&color=005ea5&style=for-the-badge&label=MoJ%20Compliant&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fendpoint%2Fmodernisation-platform-terraform-loadbalancer&logo=data:image/png;base64,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)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-report/modernisation-platform-terraform-loadbalancer)
 
-A Terraform module that creates application loadbalancer (with loadbalancer security groups) in AWS with logging enabled, s3 to store logs and Athena DB to query logs.
+A Terraform module that creates an application loadbalancer (with loadbalancer security groups) or network loadbalancer in AWS with logging enabled, s3 to store logs and Athena DB to query logs.
 
-An s3 bucket name can be provided in the module by adding the `existing_bucket_name` variable and adding the bucket name. Otherwise, if no bucket exists one will be created and no variable needs to be set in the module. If using an existing bucket the logs will need to be moved with the following folder structure {application_name}/AWSLogs/{account_number}/elasticloadbalancing/ otherwise you will experience errors with the gluecrawler function.
+An s3 bucket name can be provided in the module by adding the `existing_bucket_name` variable and adding the bucket name. Otherwise, if no bucket exists one will be created and no variable needs to be set in the module. Application loadbalancers and network loadbalancers do not log to the same S3 bucket location. If you're using existing buckets they also need to have specific permissions applied to them. See the [External buckets](#external-buckets) section for more information.
 
 Either pass in existing security group(s) to attach to the load balancer using the `security_groups` variable, or define `loadbalancer_ingress_rules` and `loadbalancer_egress_rules` variables to create a new security group within the module.
 
@@ -45,14 +45,91 @@ locals {
 
 Loadbalancer target groups and listeners need to be created separately.
 
-To run queries in Athena do the following:
-Go to the Athena console and click on Saved Queries https://console.aws.amazon.com/athena/saved-queries/home
+The use of "aws_glue_catalog_table" resources for application and network loadbalancers means that logs appearing in the S3 bucket will be available to query via Athena without having to carry out any manual Athena config steps.
 
-Click the new saved query that is named `<custom_name>`-create-table and Run it. You only have to do it once.
+## Module created S3 access_logs bucket
 
-Try a query like `select * from lb_logs limit 100;`
+By default the loadbalancer will set up an access_logs bucket for you, unless you set access_logs = false initially for testing or some other reason. Setting this back to true after the lb has been deployed will then create the bucket for you. The reason for the 'depends_on' here is that without the module.s3-bucket resource being created first, the module.lb resource will fail with a validation error.
 
+```hcl
+  depends_on = [
+    module.s3-bucket
+  ]
+```
 
+## External buckets
+
+If you decide to use externally created buckets they need to have been created and have appropriate permissions applied to them BEFORE `access_logs = true` and `existing_bucket_name` values are added to the lb code. If you add these values before the bucket is created you will get an error because the lb module will run a check to see if the s3 bucket is writeable and if it is not it will fail.
+
+So to use `external_bucket_name` the deployment steps are:
+
+1. Set `access_logs = false` in the lb create code & create the lb
+2. Create the bucket - making sure the appropriate permissions are applied
+3. Set `existing_bucket_name` in the lb create code as your-bucket-name-GUID
+
+### External bucket permissions
+
+For simplicity the bucket can be created with the following policy attached to it. This applies whether the loadbalancer is an "application" or "network" loadbalancer. This uses the bucket_policy_v2 implementation using the s3_bucket module:
+
+```hcl
+  public-lb-logs-bucket = {
+    sse_algorithm = "AES256" # required for Network Loadbalancers
+    bucket_policy_v2 = [
+      {
+        effect = "Allow"
+        actions = [
+          "s3:PutObject",
+        ]
+        principals = {
+          identifiers = ["arn:aws:iam::652711504416:root"]
+          type        = "AWS"
+        }
+      },
+      {
+        effect = "Allow"
+        actions = [
+          "s3:PutObject"
+        ]
+        principals = {
+          identifiers = ["delivery.logs.amazonaws.com"]
+          type        = "Service"
+        }
+
+        conditions = [
+          {
+            test     = "StringEquals"
+            variable = "s3:x-amz-acl"
+            values   = ["bucket-owner-full-control"]
+          }
+        ]
+      },
+      {
+        effect = "Allow"
+        actions = [
+          "s3:GetBucketAcl"
+        ]
+        principals = {
+          identifiers = ["delivery.logs.amazonaws.com"]
+          type        = "Service"
+        }
+      }
+    ]
+    iam_policies = module.baseline_presets.s3_iam_policies
+  }
+```
+
+If you want to see exactly what policies are needed for each then refer to [NLB Requirements](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-access-logs.html#access-logging-bucket-requirements) and [ALB Requirements](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html#attach-bucket-policy)
+
+## Network Loadbalancer caveats
+
+* Access logs are created only if the load balancer has a TLS listener and they contain information only about TLS requests.
+* Network loadbalancers only support SSE-S3 encryption for access logs, not aws:kms (AWS managed keys). 
+* They can support customer managed keys but this is not currently supported by this module.
+* No "verify bucket permissions" test file is created in the relevant bucket, only that the terraform apply step will fail with a validation error if the permissions and the bucket encryption parameters are not correct.
+
+## Application Loadbalancer caveats
+
+* It's worth noting that Application LB's will create a test file in the S3 bucket to verify that the bucket permissions are correct.
 
 ## Usage
 
@@ -163,28 +240,28 @@ If you're looking to raise an issue with this module, please create a new issue 
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_s3-bucket"></a> [s3-bucket](#module\_s3-bucket) | github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket | 8688bc15a08fbf5a4f4eef9b7433c5a417df8df1 |
+| <a name="module_s3-bucket"></a> [s3-bucket](#module\_s3-bucket) | github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket | 568694e50e03630d99cb569eafa06a0b879a1239 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
 | [aws_athena_database.lb-access-logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/athena_database) | resource |
-| [aws_athena_named_query.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/athena_named_query) | resource |
 | [aws_athena_workgroup.lb-access-logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/athena_workgroup) | resource |
-| [aws_glue_crawler.ssm_resource_sync](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/glue_crawler) | resource |
-| [aws_iam_policy.lb_glue_crawler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
-| [aws_iam_role.lb_glue_crawler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
-| [aws_iam_role_policy_attachment.lb_glue_crawler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_iam_role_policy_attachment.lb_glue_service](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_glue_catalog_table.application_lb_logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/glue_catalog_table) | resource |
+| [aws_glue_catalog_table.network_lb_logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/glue_catalog_table) | resource |
+| [aws_iam_policy.glue_s3](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_role.glue](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy_attachment.glue_s3](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.glue_service](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_lb.loadbalancer](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb) | resource |
 | [aws_lb_target_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group) | resource |
 | [aws_lb_target_group_attachment.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment) | resource |
 | [aws_security_group.lb](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_elb_service_account.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/elb_service_account) | data source |
 | [aws_iam_policy_document.bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.lb_glue_crawler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.lb_glue_crawler_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.glue_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.glue_s3](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_vpc.shared](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
 
 ## Inputs
@@ -205,7 +282,6 @@ If you're looking to raise an issue with this module, please create a new issue 
 | <a name="input_load_balancer_type"></a> [load\_balancer\_type](#input\_load\_balancer\_type) | application or network | `string` | `"application"` | no |
 | <a name="input_loadbalancer_egress_rules"></a> [loadbalancer\_egress\_rules](#input\_loadbalancer\_egress\_rules) | Create new security group with these egress rules for the loadbalancer.  Or use the security\_groups var to attach existing group(s) | <pre>map(object({<br>    description     = string<br>    from_port       = number<br>    to_port         = number<br>    protocol        = string<br>    security_groups = list(string)<br>    cidr_blocks     = list(string)<br>  }))</pre> | `{}` | no |
 | <a name="input_loadbalancer_ingress_rules"></a> [loadbalancer\_ingress\_rules](#input\_loadbalancer\_ingress\_rules) | Create new security group with these ingress rules for the loadbalancer.  Or use the security\_groups var to attach existing group(s) | <pre>map(object({<br>    description     = string<br>    from_port       = number<br>    to_port         = number<br>    protocol        = string<br>    security_groups = list(string)<br>    cidr_blocks     = list(string)<br>  }))</pre> | `{}` | no |
-| <a name="input_log_schedule"></a> [log\_schedule](#input\_log\_schedule) | n/a | `string` | `"cron(15 1 ? * MON *)"` | no |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | Badly named variable, use subnets instead. Keeping for backward compatibility | `list(string)` | `[]` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS Region where resources are to be created | `string` | n/a | yes |
 | <a name="input_s3_versioning"></a> [s3\_versioning](#input\_s3\_versioning) | A boolean that determines whether s3 will have versioning | `bool` | `true` | no |

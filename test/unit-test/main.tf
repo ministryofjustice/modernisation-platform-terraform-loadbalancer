@@ -76,5 +76,4 @@ module "lb_access_logs_enabled" {
   idle_timeout               = 60
   force_destroy_bucket       = true
   lb_target_groups           = local.lb_target_groups
-  log_schedule               = "cron(15 1 ? * MON *)"
 }

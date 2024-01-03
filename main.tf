@@ -8,7 +8,7 @@ data "aws_vpc" "shared" {
 
 module "s3-bucket" {
   count  = var.existing_bucket_name == "" && var.access_logs ? 1 : 0
-  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=8688bc15a08fbf5a4f4eef9b7433c5a417df8df1" # v7.0.0
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=568694e50e03630d99cb569eafa06a0b879a1239" # v7.1.0
 
   providers = {
     aws.bucket-replication = aws.bucket-replication
@@ -18,6 +18,7 @@ module "s3-bucket" {
   replication_enabled = false
   versioning_enabled  = var.s3_versioning
   force_destroy       = var.force_destroy_bucket
+  sse_algorithm       = var.load_balancer_type == "network" ? "AES256" : "aws:kms"
   lifecycle_rule = [
     {
       id      = "main"
@@ -69,14 +70,24 @@ data "aws_iam_policy_document" "bucket_policy" {
     actions = [
       "s3:PutObject"
     ]
-    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    resources = flatten([var.existing_bucket_name != ""
+      ? [
+        "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
+      ]
+      : [
+        "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
+      ]
+    ])
     principals {
       type        = "AWS"
       identifiers = [data.aws_elb_service_account.default.arn]
     }
   }
   statement {
-    sid = "AWSLogDeliveryWrite"
+    effect = "Allow"
+    sid    = "AWSLogDeliveryWrite"
 
     principals {
       type        = "Service"
@@ -87,7 +98,16 @@ data "aws_iam_policy_document" "bucket_policy" {
       "s3:PutObject"
     ]
 
-    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    resources = flatten([var.existing_bucket_name != ""
+      ? [
+        "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
+      ]
+      : [
+        "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
+      ]
+    ])
 
     condition {
       test     = "StringEquals"
@@ -100,7 +120,8 @@ data "aws_iam_policy_document" "bucket_policy" {
   }
 
   statement {
-    sid = "AWSLogDeliveryAclCheck"
+    sid    = "AWSLogDeliveryAclCheck"
+    effect = "Allow"
 
     principals {
       type        = "Service"
@@ -149,6 +170,8 @@ resource "aws_lb" "loadbalancer" {
       Name = "${var.application_name}-lb"
     },
   )
+
+  depends_on = [module.s3-bucket]
 }
 
 resource "aws_security_group" "lb" {
@@ -189,7 +212,6 @@ resource "aws_security_group" "lb" {
   )
 }
 
-
 resource "aws_athena_database" "lb-access-logs" {
   count  = var.access_logs ? 1 : 0
   name   = replace("${var.application_name}-lb-access-logs", "-", "_") # dashes not allowed in name
@@ -199,24 +221,6 @@ resource "aws_athena_database" "lb-access-logs" {
   }
 }
 
-resource "aws_athena_named_query" "main" {
-  count     = var.access_logs ? 1 : 0
-  name      = "${var.application_name}-create-table"
-  database  = aws_athena_database.lb-access-logs[0].name
-  workgroup = aws_athena_workgroup.lb-access-logs[0].id
-
-  query = templatefile(
-    "${path.module}/templates/create_table.sql",
-    {
-      bucket           = var.existing_bucket_name != "" ? var.existing_bucket_name : module.s3-bucket[0].bucket.id
-      account_id       = var.account_number
-      region           = var.region
-      application_name = var.application_name
-      database         = aws_athena_database.lb-access-logs[0].name
-    }
-  )
-}
-
 resource "aws_athena_workgroup" "lb-access-logs" {
   count = var.access_logs ? 1 : 0
   name  = "${var.application_name}-lb-access-logs"
@@ -224,6 +228,9 @@ resource "aws_athena_workgroup" "lb-access-logs" {
   configuration {
     enforce_workgroup_configuration    = true
     publish_cloudwatch_metrics_enabled = true
+    engine_version {
+      selected_engine_version = "Athena engine version 3"
+    }
 
     result_configuration {
       output_location = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/output/" : "s3://${module.s3-bucket[0].bucket.id}/output/"
@@ -290,15 +297,15 @@ resource "aws_lb_target_group_attachment" "this" {
   port             = coalesce(each.value.attachment_port, each.value.port)
 }
 
-# Glue crawler to update Athena Table
-# Role for crawler
-resource "aws_iam_role" "lb_glue_crawler" {
+# Glue Permissions
+resource "aws_iam_role" "glue" {
   count              = var.access_logs ? 1 : 0
-  name               = "ssm-glue-crawler"
-  assume_role_policy = data.aws_iam_policy_document.lb_glue_crawler_assume.json
+  name               = "glue-${var.application_name}"
+  assume_role_policy = data.aws_iam_policy_document.glue_assume[count.index].json
 }
 
-data "aws_iam_policy_document" "lb_glue_crawler_assume" {
+data "aws_iam_policy_document" "glue_assume" {
+  count = var.access_logs ? 1 : 0
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -310,13 +317,7 @@ data "aws_iam_policy_document" "lb_glue_crawler_assume" {
   }
 }
 
-resource "aws_iam_policy" "lb_glue_crawler" {
-  count  = var.access_logs ? 1 : 0
-  name   = "LbGlueCrawler"
-  policy = data.aws_iam_policy_document.lb_glue_crawler[count.index].json
-}
-
-data "aws_iam_policy_document" "lb_glue_crawler" {
+data "aws_iam_policy_document" "glue_s3" {
   count = var.access_logs ? 1 : 0
   statement {
     effect = "Allow"
@@ -324,33 +325,320 @@ data "aws_iam_policy_document" "lb_glue_crawler" {
       "s3:GetObject",
       "s3:PutObject"
     ]
-    resources = [var.existing_bucket_name != "" ? "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*" : "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*"]
+    resources = flatten([var.existing_bucket_name != ""
+      ? [
+        "arn:aws:s3:::${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "arn:aws:s3:::${var.existing_bucket_name}/AWSLogs/${var.account_number}/*"
+      ]
+      : [
+        "${module.s3-bucket[0].bucket.arn}/${var.application_name}/AWSLogs/${var.account_number}/*",
+        "${module.s3-bucket[0].bucket.arn}/AWSLogs/${var.account_number}/*"
+      ]
+    ])
   }
 }
 
-# Glue Crawler Policy
-resource "aws_iam_role_policy_attachment" "lb_glue_crawler" {
-  count      = var.access_logs ? 1 : 0
-  role       = aws_iam_role.lb_glue_crawler[count.index].name
-  policy_arn = aws_iam_policy.lb_glue_crawler[count.index].arn
+resource "aws_iam_policy" "glue_s3" {
+  count  = var.access_logs && length(data.aws_iam_policy_document.glue_s3) > 0 ? 1 : 0
+  name   = "glue-s3-${var.application_name}"
+  policy = data.aws_iam_policy_document.glue_s3[count.index].json
 }
 
-resource "aws_iam_role_policy_attachment" "lb_glue_service" {
+resource "aws_iam_role_policy_attachment" "glue_s3" {
+  count      = var.access_logs && length(data.aws_iam_policy_document.glue_s3) > 0 ? 1 : 0
+  role       = aws_iam_role.glue[count.index].name
+  policy_arn = aws_iam_policy.glue_s3[count.index].arn
+}
+
+resource "aws_iam_role_policy_attachment" "glue_service" {
   count      = var.access_logs ? 1 : 0
-  role       = aws_iam_role.lb_glue_crawler[count.index].id
+  role       = aws_iam_role.glue[count.index].id
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
 }
 
-# Glue Crawler
-resource "aws_glue_crawler" "ssm_resource_sync" {
-  #checkov:skip=CKV_AWS_195
-  count         = var.access_logs ? 1 : 0
+# Catalog Tables
+resource "aws_glue_catalog_table" "application_lb_logs" {
+  count         = var.access_logs && var.load_balancer_type == "application" ? 1 : 0
+  name          = "${var.application_name}-application-lb-logs"
   database_name = aws_athena_database.lb-access-logs[0].name
-  name          = "lb_resource_sync"
-  role          = aws_iam_role.lb_glue_crawler[count.index].arn
-  schedule      = var.log_schedule
 
-  s3_target {
-    path = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/"
+  table_type = "EXTERNAL_TABLE"
+
+  partition_keys {
+    name = "day"
+    type = "string"
+  }
+
+  parameters = {
+    "projection.enabled"           = "true"
+    "projection.day.format"        = "yyyy/MM/dd"
+    "projection.day.interval"      = "1"
+    "projection.day.interval.unit" = "DAYS"
+    "projection.day.type"          = "date"
+    "projection.day.range"         = "2023/01/01,NOW"
+    "storage.location.template"    = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${day}" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}/$${day}"
+  }
+  storage_descriptor {
+    location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}"
+    input_format  = "org.apache.hadoop.mapred.TextInputFormat"
+    output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+    ser_de_info {
+      name = "application_lb_logs"
+      parameters = {
+        "serialization.format" = "1",
+        "input.regex"          = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*):([0-9]*) ([^ ]*)[:-]([0-9]*) ([-.0-9]*) ([-.0-9]*) ([-.0-9]*) (|[-0-9]*) (-|[-0-9]*) ([-0-9]*) ([-0-9]*) \"([^ ]*) (.*) (- |[^ ]*)\" \"([^\"]*)\" ([A-Z0-9-_]+) ([A-Za-z0-9.-]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^\"]*)\" ([-.0-9]*) ([^ ]*) \"([^\"]*)\" \"([^\"]*)\" \"([^ ]*)\" \"([^s]+?)\" \"([^s]+)\" \"([^ ]*)\" \"([^ ]*)\""
+      }
+      serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
+    }
+    columns {
+      name = "type"
+      type = "string"
+    }
+    columns {
+      name = "time"
+      type = "string"
+    }
+    columns {
+      name = "elb"
+      type = "string"
+    }
+    columns {
+      name = "client_ip"
+      type = "string"
+    }
+    columns {
+      name = "client_port"
+      type = "int"
+    }
+    columns {
+      name = "target_ip"
+      type = "string"
+    }
+    columns {
+      name = "target_port"
+      type = "int"
+    }
+    columns {
+      name = "request_processing_time"
+      type = "double"
+    }
+    columns {
+      name = "target_processing_time"
+      type = "double"
+    }
+    columns {
+      name = "response_processing_time"
+      type = "double"
+    }
+    columns {
+      name = "elb_status_code"
+      type = "int"
+    }
+    columns {
+      name = "target_status_code"
+      type = "int"
+    }
+    columns {
+      name = "received_bytes"
+      type = "bigint"
+    }
+    columns {
+      name = "sent_bytes"
+      type = "bigint"
+    }
+    columns {
+      name = "request_verb"
+      type = "string"
+    }
+    columns {
+      name = "request_url"
+      type = "string"
+    }
+    columns {
+      name = "request_proto"
+      type = "string"
+    }
+    columns {
+      name = "user_agent"
+      type = "string"
+    }
+    columns {
+      name = "ssl_cipher"
+      type = "string"
+    }
+    columns {
+      name = "ssl_protocol"
+      type = "string"
+    }
+    columns {
+      name = "target_group_arn"
+      type = "string"
+    }
+    columns {
+      name = "trace_id"
+      type = "string"
+    }
+    columns {
+      name = "domain_name"
+      type = "string"
+    }
+    columns {
+      name = "chosen_cert_arn"
+      type = "string"
+    }
+    columns {
+      name = "matched_rule_priority"
+      type = "int"
+    }
+    columns {
+      name = "request_creation_time"
+      type = "string"
+    }
+    columns {
+      name = "actions_executed"
+      type = "string"
+    }
+    columns {
+      name = "redirect_url"
+      type = "string"
+    }
+    columns {
+      name = "lambda_error_reason"
+      type = "string"
+    }
+    columns {
+      name = "target_port_list"
+      type = "string"
+    }
+    columns {
+      name = "target_status_code_list"
+      type = "string"
+    }
+    columns {
+      name = "classification"
+      type = "string"
+    }
+    columns {
+      name = "classification_reason"
+      type = "string"
+    }
+  }
+}
+
+resource "aws_glue_catalog_table" "network_lb_logs" {
+  count         = var.access_logs && var.load_balancer_type == "network" ? 1 : 0
+  name          = "${var.application_name}-network-lb-logs"
+  database_name = aws_athena_database.lb-access-logs[0].name
+
+  table_type = "EXTERNAL_TABLE"
+
+  storage_descriptor {
+    location      = var.existing_bucket_name != "" ? "s3://${var.existing_bucket_name}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}" : "s3://${module.s3-bucket[0].bucket.id}/${var.application_name}/AWSLogs/${var.account_number}/elasticloadbalancing/${var.region}"
+    input_format  = "org.apache.hadoop.mapred.TextInputFormat"
+    output_format = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+    ser_de_info {
+      name = "network_lb_logs"
+      parameters = {
+        "serialization.format" = "1",
+        "input.regex"          = "([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*):([0-9]*) ([^ ]*):([0-9]*) ([-.0-9]*) ([-.0-9]*) ([-0-9]*) ([-0-9]*) ([-0-9]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*)$"
+      }
+      serialization_library = "org.apache.hadoop.hive.serde2.RegexSerDe"
+    }
+    columns {
+      name = "type"
+      type = "string"
+    }
+    columns {
+      name = "version"
+      type = "string"
+    }
+    columns {
+      name = "time"
+      type = "string"
+    }
+    columns {
+      name = "elb"
+      type = "string"
+    }
+    columns {
+      name = "listener_id"
+      type = "string"
+    }
+    columns {
+      name = "client_ip"
+      type = "string"
+    }
+    columns {
+      name = "client_port"
+      type = "int"
+    }
+    columns {
+      name = "target_ip"
+      type = "string"
+    }
+    columns {
+      name = "target_port"
+      type = "int"
+    }
+    columns {
+      name = "tcp_connection_time"
+      type = "double"
+    }
+    columns {
+      name = "tls_handshake_time"
+      type = "double"
+    }
+    columns {
+      name = "received_bytes"
+      type = "bigint"
+    }
+    columns {
+      name = "sent_bytes"
+      type = "bigint"
+    }
+    columns {
+      name = "incoming_tls_alert"
+      type = "int"
+    }
+    columns {
+      name = "cert_arn"
+      type = "string"
+    }
+    columns {
+      name = "certificate_serial"
+      type = "string"
+    }
+    columns {
+      name = "tls_cipher_suite"
+      type = "string"
+    }
+    columns {
+      name = "tls_protocol_version"
+      type = "string"
+    }
+    columns {
+      name = "tls_named_group"
+      type = "string"
+    }
+    columns {
+      name = "domain_name"
+      type = "string"
+    }
+    columns {
+      name = "alpn_fe_protocol"
+      type = "string"
+    }
+    columns {
+      name = "alpn_be_protocol"
+      type = "string"
+    }
+    columns {
+      name = "alpn_client_preference_list"
+      type = "string"
+    }
+    columns {
+      name = "tls_connection_creation_time"
+      type = "string"
+    }
   }
 }
