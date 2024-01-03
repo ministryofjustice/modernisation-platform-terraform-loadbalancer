@@ -170,6 +170,8 @@ resource "aws_lb" "loadbalancer" {
       Name = "${var.application_name}-lb"
     },
   )
+
+  depends_on = [ module.s3-bucket ]
 }
 
 resource "aws_security_group" "lb" {
