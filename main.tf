@@ -436,7 +436,7 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
     }
     columns {
       name = "target_status_code"
-      type = "int"
+      type = "string"
     }
     columns {
       name = "received_bytes"
@@ -475,7 +475,7 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
       type = "string"
     }
     columns {
-      name = "trace_header"
+      name = "trace_id"
       type = "string"
     }
     columns {
@@ -488,7 +488,7 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
     }
     columns {
       name = "matched_rule_priority"
-      type = "int"
+      type = "string"
     }
     columns {
       name = "request_creation_time"
@@ -523,7 +523,7 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
       type = "string"
     }
     columns {
-      name = "trace_id"
+      name = "conn_trace_id"
       type = "string"
     }
   }
