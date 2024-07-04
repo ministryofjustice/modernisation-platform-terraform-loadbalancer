@@ -134,3 +134,28 @@ variable "dns_record_client_routing_policy" {
   description = "(optional) Indicates how traffic is distributed among network load balancer Availability Zones only. Possible values are any_availability_zone (client DNS queries are resolved among healthy LB IP addresses across all LB Availability Zones), partial_availability_zone_affinity (85 percent of client DNS queries will favor load balancer IP addresses in their own Availability Zone, while the remaining queries resolve to any healthy zone) and availability_zone_affinity (Client DNS queries will favor load balancer IP address in their own Availability Zone)."
   default     = "any_availability_zone"
 }
+
+variable "custom_lifecycle_rule" {
+  description = "Custom lifecycle rule to override the default one"
+  type = list(object({
+    id      = string
+    enabled = string
+    prefix  = string
+    tags    = map(string)
+    transition = list(object({
+      days          = number
+      storage_class = string
+    }))
+    expiration = object({
+      days = number
+    })
+    noncurrent_version_transition = list(object({
+      days          = number
+      storage_class = string
+    }))
+    noncurrent_version_expiration = object({
+      days = number
+    })
+  }))
+  default = []
+}

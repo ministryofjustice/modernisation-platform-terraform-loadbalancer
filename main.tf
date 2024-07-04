@@ -19,7 +19,7 @@ module "s3-bucket" {
   versioning_enabled  = var.s3_versioning
   force_destroy       = var.force_destroy_bucket
   sse_algorithm       = var.load_balancer_type == "network" ? "AES256" : "aws:kms"
-  lifecycle_rule = [
+  lifecycle_rule = length(var.custom_lifecycle_rule) > 0 ? var.custom_lifecycle_rule : [
     {
       id      = "main"
       enabled = "Enabled"
@@ -34,7 +34,8 @@ module "s3-bucket" {
         {
           days          = 90
           storage_class = "STANDARD_IA"
-          }, {
+        },
+        {
           days          = 365
           storage_class = "GLACIER"
         }
@@ -48,7 +49,8 @@ module "s3-bucket" {
         {
           days          = 90
           storage_class = "STANDARD_IA"
-          }, {
+        },
+        {
           days          = 365
           storage_class = "GLACIER"
         }
@@ -60,7 +62,12 @@ module "s3-bucket" {
     }
   ]
 
-  tags = var.tags
+  tags = merge(
+    var.tags,
+    {
+      backup = false
+    },
+  )
 }
 
 data "aws_iam_policy_document" "bucket_policy" {
