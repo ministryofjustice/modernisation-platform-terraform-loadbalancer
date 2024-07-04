@@ -19,48 +19,7 @@ module "s3-bucket" {
   versioning_enabled  = var.s3_versioning
   force_destroy       = var.force_destroy_bucket
   sse_algorithm       = var.load_balancer_type == "network" ? "AES256" : "aws:kms"
-  lifecycle_rule = length(var.custom_lifecycle_rule) > 0 ? var.custom_lifecycle_rule : [
-    {
-      id      = "main"
-      enabled = "Enabled"
-      prefix  = ""
-
-      tags = {
-        rule      = "log"
-        autoclean = "true"
-      }
-
-      transition = [
-        {
-          days          = 90
-          storage_class = "STANDARD_IA"
-        },
-        {
-          days          = 365
-          storage_class = "GLACIER"
-        }
-      ]
-
-      expiration = {
-        days = 730
-      }
-
-      noncurrent_version_transition = [
-        {
-          days          = 90
-          storage_class = "STANDARD_IA"
-        },
-        {
-          days          = 365
-          storage_class = "GLACIER"
-        }
-      ]
-
-      noncurrent_version_expiration = {
-        days = 730
-      }
-    }
-  ]
+  lifecycle_rule      = var.access_logs_lifecycle_rule
 
   tags = merge(
     var.tags,

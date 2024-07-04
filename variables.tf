@@ -135,7 +135,7 @@ variable "dns_record_client_routing_policy" {
   default     = "any_availability_zone"
 }
 
-variable "custom_lifecycle_rule" {
+variable "access_logs_lifecycle_rule" {
   description = "Custom lifecycle rule to override the default one"
   type = list(object({
     id      = string
@@ -157,5 +157,46 @@ variable "custom_lifecycle_rule" {
       days = number
     })
   }))
-  default = []
+  default = [
+    {
+      id      = "main"
+      enabled = "Enabled"
+      prefix  = ""
+
+      tags = {
+        rule      = "log"
+        autoclean = "true"
+      }
+
+      transition = [
+        {
+          days          = 90
+          storage_class = "STANDARD_IA"
+        },
+        {
+          days          = 365
+          storage_class = "GLACIER"
+        }
+      ]
+
+      expiration = {
+        days = 730
+      }
+
+      noncurrent_version_transition = [
+        {
+          days          = 90
+          storage_class = "STANDARD_IA"
+        },
+        {
+          days          = 365
+          storage_class = "GLACIER"
+        }
+      ]
+
+      noncurrent_version_expiration = {
+        days = 730
+      }
+    }
+  ]
 }
