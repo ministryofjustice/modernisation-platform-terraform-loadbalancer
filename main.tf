@@ -117,7 +117,7 @@ resource "aws_lb" "loadbalancer" {
   subnets                          = concat(var.subnets, var.public_subnets)
   enable_deletion_protection       = var.enable_deletion_protection
   idle_timeout                     = var.idle_timeout
-  drop_invalid_header_fields       = true
+  drop_invalid_header_fields       = var.drop_invalid_header_fields
   enable_cross_zone_load_balancing = var.enable_cross_zone_load_balancing
   dns_record_client_routing_policy = var.dns_record_client_routing_policy
 
