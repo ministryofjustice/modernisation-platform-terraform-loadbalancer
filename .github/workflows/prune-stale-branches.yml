@@ -3,7 +3,7 @@ name: Cleanup of Stale Branches (Deletes if branch and commits are 2+ months old
 on:
   push:
     branches:
-      - feature-9556-automating-pruning-of-stale-branches
+      - feature-final-branch
 
 permissions:
   contents: write
@@ -19,57 +19,87 @@ jobs:
         run: |
           command -v gh >/dev/null || (echo "❌ GitHub CLI (gh) is not installed" && exit 1)
           command -v jq >/dev/null || (echo "❌ jq is not installed" && exit 1)
+
       - name: Authenticate GitHub CLI
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-      - name: Cleanup stale branches across repositories (Bold Mode – Aggressive Cleanup)
+
+      - name: Cleanup stale branches across repositories (Dry Run with Error Handling)
         run: |
           set -eo pipefail
-          DEBUG=false
+
+          DEBUG=false  # Optional: Set to true for extra debug echo
+
           repos=(
-            "ministryofjustice/modernisation-platform-terraform-loadbalancer"
+            "KudziDave/reusable-terraform-plan-apply"
+            "KudziDave/unit-tests"
+            "KudziDave/JosephRevival"
+            # Add more repositories here
           )
+
           for repo in "${repos[@]}"; do
             echo ""
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🔍 STARTING REPO: $repo"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔁 Processing repository: $repo"
+            echo "============================================="
+
             {
               branches=$(gh api repos/$repo/branches --jq '.[].name')
-              repo_summary="| Branch | Status | Reason |\n|--------|--------|--------|"
+
               for branch in $branches; do
                 if [[ "$branch" == "main" ]]; then
-                  repo_summary+="\n| \`$branch\` | ⏭️ Skipped | Main branch |"
+                  echo "⏭️  Skipping 'main'"
                   continue
                 fi
+
                 allow_delete=$(gh api repos/$repo/branches/$branch/protection --silent 2>/dev/null | jq -r '.allow_deletions.enabled // "true"')
                 if [[ "$allow_delete" == "false" ]]; then
-                  repo_summary+="\n| \`$branch\` | ⏭️ Skipped | Protected from deletion |"
+                  echo "⏭️  Skipping protected branch: $branch"
                   continue
                 fi
+
                 if gh api repos/$repo/git/ref/tags/do-not-prune/$branch --silent >/dev/null 2>&1; then
-                  repo_summary+="\n| \`$branch\` | ⏭️ Skipped | Tagged do-not-prune |"
+                  echo "🏷️  Skipping tagged branch: do-not-prune/$branch"
                   continue
                 fi
-                last_commit_date=$(gh api "repos/$repo/commits?sha=$branch" --jq '.[0].commit.committer.date' || echo "")
+
+                last_commit_date=$(gh api repos/$repo/commits/$branch --jq '.commit.committer.date' || echo "")
                 last_commit_timestamp=$(date -d "$last_commit_date" +%s 2>/dev/null || echo 0)
                 two_months_ago_timestamp=$(date -d "2 months ago" +%s)
+
+                [[ "$DEBUG" == true ]] && echo "  ↪ Last commit timestamp: $last_commit_timestamp"
+
                 if [[ "$last_commit_timestamp" -eq 0 || "$last_commit_timestamp" -ge "$two_months_ago_timestamp" ]]; then
-                  repo_summary+="\n| \`$branch\` | ✅ Active | Recent commit |"
+                  echo "✅ Branch '$branch' is active or too recent."
                   continue
                 fi
-                first_commit=$(gh api "repos/$repo/commits?sha=$branch" --paginate --jq '.[].commit.committer.date' | tail -n 1)
-                branch_creation_timestamp=$(date -d "$first_commit" +%s 2>/dev/null || echo 0)
-                if [[ "$branch_creation_timestamp" -eq 0 || "$branch_creation_timestamp" -ge "$two_months_ago_timestamp" ]]; then
-                  repo_summary+="\n| \`$branch\` | ⏭️ Skipped | Too new |"
+
+                merge_base=$(gh api repos/$repo/compare/main...$branch --jq '.merge_base_commit.sha' || true)
+                first_commit=$(gh api repos/$repo/commits/$branch --jq '.[].sha' --paginate | tail -n 1)
+
+                if [[ -n "$first_commit" ]]; then
+                  branch_creation_date=$(gh api repos/$repo/commits/$first_commit --jq '.commit.committer.date')
+                  branch_creation_timestamp=$(date -d "$branch_creation_date" +%s)
+                else
+                  echo "⏭️  No unique commits found for $branch. Skipping."
                   continue
                 fi
-                repo_summary+="\n| \`$branch\` | 🔥 Stale | Would delete (dry run) |"
+
+                if [[ "$branch_creation_timestamp" -ge "$two_months_ago_timestamp" ]]; then
+                  echo "⏭️  Branch '$branch' is too new."
+                  continue
+                fi
+
+                echo "🔥 Stale branch detected: $branch"
+                echo "  ➤ Last commit: $last_commit_date"
+                echo "  ➤ Created on: $branch_creation_date"
+                echo "  ➤ (Dry run) Would delete branch: $branch"
+
+                # Actual deletion disabled (dry run)
+                # if ! gh api -X DELETE repos/$repo/git/refs/heads/$branch; then
+                #   echo "⚠️  Failed to delete branch '$branch'. It may be protected."
+                # fi
               done
-              echo -e "$repo_summary"
-              echo "✅ DONE with $repo"
-              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
             } || {
               echo "❌ Failed to process $repo — skipping to next."
               continue
