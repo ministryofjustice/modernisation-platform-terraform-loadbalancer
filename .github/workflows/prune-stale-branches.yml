@@ -1,9 +1,9 @@
 name: Cleanup of Stale Branches (Deletes if branch and commits are 2+ months old)
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
+  push:
+    branches:
+      - feature-final-branch
 
 permissions:
   contents: write
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   cleanup:
-    name: Cleanup Stale Branches
+    name: Cleanup Stale Branches in Multiple Repos
     runs-on: ubuntu-latest
 
     steps:
@@ -20,101 +20,88 @@ jobs:
           command -v gh >/dev/null || (echo "❌ GitHub CLI (gh) is not installed" && exit 1)
           command -v jq >/dev/null || (echo "❌ jq is not installed" && exit 1)
 
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-
-      - name: Setup GitHub CLI
+      - name: Authenticate GitHub CLI
         run: |
-          gh auth setup-git
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      - name: Fetch branches protected from deletion
-        id: protected
-        run: |
-          echo "Fetching branches with 'deletion protection' enabled..."
-          > protected-branches.txt
-
-          branches=$(gh api repos/${{ github.repository }}/branches --jq '.[].name')
-
-          for branch in $branches; do
-            protection=$(gh api repos/${{ github.repository }}/branches/$branch/protection --silent 2>/dev/null || true)
-            allow_delete=$(echo "$protection" | jq -r '.allow_deletions.enabled // "true"')
-
-            if [[ "$allow_delete" == "false" ]]; then
-              echo "$branch" >> protected-branches.txt
-            fi
-          done
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete stale branches (no commits in last 2 months)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Cleanup stale branches across repositories (Dry Run with Error Handling)
         run: |
           set -eo pipefail
-          trap '' PIPE
-          git fetch --all --prune --tags
 
-          mapfile -t protected < protected-branches.txt
-          protected_branches="${protected[*]}"
+          DEBUG=false  # Optional: Set to true for extra debug echo
 
-          echo "Branches protected from deletion: ${protected_branches[@]}"
-          echo ""
+          repos=(
+            "KudziDave/reusable-terraform-plan-apply"
+            "KudziDave/unit-tests"
+            "KudziDave/JosephRevival"
+            # Add more repositories here
+          )
 
-          echo "| Branch | Status | Reason |"
-          echo "|--------|--------|--------|"
-
-          branches=$(git for-each-ref --format='%(refname:short)' refs/remotes/origin/)
-
-          for raw_branch in $branches; do
-            branch=$(echo "$raw_branch" | sed 's|^origin/||' | xargs)
-
-            if [[ -z "$branch" || "$branch" == "origin" ]]; then
-              continue
-            fi
-
-            reason=""
-            status="⏸️ Skipped"
-
+          for repo in "${repos[@]}"; do
             echo ""
-            echo "🔍 Checking branch: $branch"
+            echo "🔁 Processing repository: $repo"
+            echo "============================================="
 
-            last_commit_date=$(git log -1 --format=%aD origin/$branch || echo "Unknown")
-            last_commit_timestamp=$(date -d "$last_commit_date" +%s 2>/dev/null || echo 0)
-            two_months_ago_timestamp=$(date -d "2 months ago" +%s)
+            {
+              branches=$(gh api repos/$repo/branches --jq '.[].name')
 
-            echo "  ➤ Last commit date: $last_commit_date"
+              for branch in $branches; do
+                if [[ "$branch" == "main" ]]; then
+                  echo "⏭️  Skipping 'main'"
+                  continue
+                fi
 
-            if [[ "$branch" == "main" ]]; then
-              reason="Main branch"
-            elif echo "${protected_branches[@]}" | grep -qw "$branch"; then
-              reason="Deletion protection enabled"
-            elif git show-ref --verify --quiet "refs/tags/do-not-prune/$branch"; then
-              reason="Tagged do-not-prune"
-            elif [[ $last_commit_timestamp -lt $two_months_ago_timestamp ]]; then
-              merge_base=$(git merge-base origin/main origin/$branch || true)
-              first_unique_commit=$(git log origin/$branch --reverse --pretty=format:"%H" --not $merge_base | head -1)
+                allow_delete=$(gh api repos/$repo/branches/$branch/protection --silent 2>/dev/null | jq -r '.allow_deletions.enabled // "true"')
+                if [[ "$allow_delete" == "false" ]]; then
+                  echo "⏭️  Skipping protected branch: $branch"
+                  continue
+                fi
 
-              if [ -n "$first_unique_commit" ]; then
-                branch_creation_date=$(git show -s --format=%aD $first_unique_commit)
-                branch_creation_timestamp=$(date -d "$branch_creation_date" +%s)
-                echo "  ➤ Branch creation date: $branch_creation_date"
-              fi
+                if gh api repos/$repo/git/ref/tags/do-not-prune/$branch --silent >/dev/null 2>&1; then
+                  echo "🏷️  Skipping tagged branch: do-not-prune/$branch"
+                  continue
+                fi
 
-              reason="Deleted (no commits in 2+ months)"
-              status="🔥 Deleted"
-              echo "🗑️ Deleting branch: $branch"
-              if ! gh api -X DELETE repos/${{ github.repository }}/git/refs/heads/$branch; then
-                echo "⚠️ WARNING: GitHub refused to delete branch '$branch'. It may be protected."
-                status="⚠️ Failed"
-                reason="GitHub API deletion failed (possible protection)"
-              fi
-            else
-              reason="Active (recent commits)"
-            fi
+                last_commit_date=$(gh api repos/$repo/commits/$branch --jq '.commit.committer.date' || echo "")
+                last_commit_timestamp=$(date -d "$last_commit_date" +%s 2>/dev/null || echo 0)
+                two_months_ago_timestamp=$(date -d "2 months ago" +%s)
 
-            printf "| \`%s\` | %s | %s |\n" "$branch" "$status" "$reason"
+                [[ "$DEBUG" == true ]] && echo "  ↪ Last commit timestamp: $last_commit_timestamp"
+
+                if [[ "$last_commit_timestamp" -eq 0 || "$last_commit_timestamp" -ge "$two_months_ago_timestamp" ]]; then
+                  echo "✅ Branch '$branch' is active or too recent."
+                  continue
+                fi
+
+                merge_base=$(gh api repos/$repo/compare/main...$branch --jq '.merge_base_commit.sha' || true)
+                first_commit=$(gh api repos/$repo/commits/$branch --jq '.[].sha' --paginate | tail -n 1)
+
+                if [[ -n "$first_commit" ]]; then
+                  branch_creation_date=$(gh api repos/$repo/commits/$first_commit --jq '.commit.committer.date')
+                  branch_creation_timestamp=$(date -d "$branch_creation_date" +%s)
+                else
+                  echo "⏭️  No unique commits found for $branch. Skipping."
+                  continue
+                fi
+
+                if [[ "$branch_creation_timestamp" -ge "$two_months_ago_timestamp" ]]; then
+                  echo "⏭️  Branch '$branch' is too new."
+                  continue
+                fi
+
+                echo "🔥 Stale branch detected: $branch"
+                echo "  ➤ Last commit: $last_commit_date"
+                echo "  ➤ Created on: $branch_creation_date"
+                echo "  ➤ (Dry run) Would delete branch: $branch"
+
+                # Actual deletion disabled (dry run)
+                # if ! gh api -X DELETE repos/$repo/git/refs/heads/$branch; then
+                #   echo "⚠️  Failed to delete branch '$branch'. It may be protected."
+                # fi
+              done
+
+            } || {
+              echo "❌ Failed to process $repo — skipping to next."
+              continue
+            }
           done
