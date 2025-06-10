@@ -97,6 +97,15 @@ variable "s3_versioning" {
   description = "A boolean that determines whether s3 will have versioning"
   default     = true
 }
+variable "s3_notification_sqs_queues" {
+  type = map(object({
+    events        = list(string)     # e.g. ["s3:ObjectCreated:*"]
+    filter_prefix = optional(string) # e.g. "images/"
+    filter_suffix = optional(string) # e.g. ".gz"
+  }))
+  description = "a map of SQS notification queues to create where the map key is the sqs queue name; set notification_enabled to true to enable bucket notifications; use this option for Cortex Xsiam S3 integration"
+  default     = {}
+}
 variable "lb_target_groups" {
   description = "Map of load balancer target groups, where key is the name"
   type = map(object({

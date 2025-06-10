@@ -2,6 +2,10 @@ output "athena_db" {
   value = var.access_logs ? aws_athena_database.lb-access-logs[0] : null
 }
 
+output "s3_bucket" {
+  value = module.s3-bucket
+}
+
 output "security_group" {
   value = length(aws_security_group.lb) > 0 ? aws_security_group.lb[0] : null
 }
@@ -24,5 +28,4 @@ output "load_balancer_dns_name" {
 
 output "load_balancer_zone_id" {
   value = aws_lb.loadbalancer.zone_id
-
 }
