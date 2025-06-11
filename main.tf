@@ -19,6 +19,7 @@ module "s3-bucket" {
   force_destroy           = var.force_destroy_bucket
   sse_algorithm           = var.load_balancer_type == "network" ? "AES256" : "aws:kms"
   lifecycle_rule          = var.access_logs_lifecycle_rule
+  notification_enabled    = length(var.s3_notification_sqs_queues) != 0
   notification_sqs_queues = var.s3_notification_sqs_queues
 
   tags = merge(
