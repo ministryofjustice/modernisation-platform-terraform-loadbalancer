@@ -8,7 +8,7 @@ data "aws_vpc" "shared" {
 
 module "s3-bucket" {
   count  = var.existing_bucket_name == "" && var.access_logs ? 1 : 0
-  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=30bd6612df3a6583129d3867c27f912c8fe16c48"
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=bf97d1f182936e9bfab0fb61baad2ba327ac36d3" # v8.2.2
   providers = {
     aws.bucket-replication = aws.bucket-replication
   }
