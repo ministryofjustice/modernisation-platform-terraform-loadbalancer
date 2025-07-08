@@ -97,6 +97,16 @@ variable "s3_versioning" {
   description = "A boolean that determines whether s3 will have versioning"
   default     = true
 }
+variable "s3_notification_queues" {
+  type = map(object({
+    events        = list(string)     # e.g. ["s3:ObjectCreated:*"]
+    filter_prefix = optional(string) # e.g. "images/"
+    filter_suffix = optional(string) # e.g. ".gz"
+    queue_arn     = string
+  }))
+  description = "a map of bucket notification queues where the map key is used as the configuration id"
+  default     = {}
+}
 variable "lb_target_groups" {
   description = "Map of load balancer target groups, where key is the name"
   type = map(object({
