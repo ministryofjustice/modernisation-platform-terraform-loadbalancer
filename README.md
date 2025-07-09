@@ -240,7 +240,7 @@ If you're looking to raise an issue with this module, please create a new issue 
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_s3-bucket"></a> [s3-bucket](#module\_s3-bucket) | github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket | 474f27a3f9bf542a8826c76fb049cc84b5cf136f |
+| <a name="module_s3-bucket"></a> [s3-bucket](#module\_s3-bucket) | github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket | bf97d1f182936e9bfab0fb61baad2ba327ac36d3 |
 
 ## Resources
 
@@ -286,6 +286,7 @@ If you're looking to raise an issue with this module, please create a new issue 
 | <a name="input_loadbalancer_ingress_rules"></a> [loadbalancer\_ingress\_rules](#input\_loadbalancer\_ingress\_rules) | Create new security group with these ingress rules for the loadbalancer.  Or use the security\_groups var to attach existing group(s) | <pre>map(object({<br/>    description     = string<br/>    from_port       = number<br/>    to_port         = number<br/>    protocol        = string<br/>    security_groups = list(string)<br/>    cidr_blocks     = list(string)<br/>  }))</pre> | `{}` | no |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | Badly named variable, use subnets instead. Keeping for backward compatibility | `list(string)` | `[]` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS Region where resources are to be created | `string` | n/a | yes |
+| <a name="input_s3_notification_queues"></a> [s3\_notification\_queues](#input\_s3\_notification\_queues) | a map of bucket notification queues where the map key is used as the configuration id | <pre>map(object({<br/>    events        = list(string)     # e.g. ["s3:ObjectCreated:*"]<br/>    filter_prefix = optional(string) # e.g. "images/"<br/>    filter_suffix = optional(string) # e.g. ".gz"<br/>    queue_arn     = string<br/>  }))</pre> | `{}` | no |
 | <a name="input_s3_versioning"></a> [s3\_versioning](#input\_s3\_versioning) | A boolean that determines whether s3 will have versioning | `bool` | `true` | no |
 | <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | List of existing security group ids to attach to the load balancer.  You can use this instead of loadbalancer\_ingress\_rules,loadbalancer\_egress\_rules vars | `list(string)` | `null` | no |
 | <a name="input_subnets"></a> [subnets](#input\_subnets) | List of subnet IDs. Typically use private subnet for internal LBs and public for public LBs | `list(string)` | `[]` | no |
@@ -302,6 +303,7 @@ If you're looking to raise an issue with this module, please create a new issue 
 | <a name="output_load_balancer_arn"></a> [load\_balancer\_arn](#output\_load\_balancer\_arn) | n/a |
 | <a name="output_load_balancer_dns_name"></a> [load\_balancer\_dns\_name](#output\_load\_balancer\_dns\_name) | n/a |
 | <a name="output_load_balancer_zone_id"></a> [load\_balancer\_zone\_id](#output\_load\_balancer\_zone\_id) | n/a |
+| <a name="output_s3_bucket"></a> [s3\_bucket](#output\_s3\_bucket) | n/a |
 | <a name="output_security_group"></a> [security\_group](#output\_security\_group) | n/a |
 <!-- END_TF_DOCS -->
 

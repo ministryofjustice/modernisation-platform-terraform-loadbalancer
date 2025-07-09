@@ -8,17 +8,19 @@ data "aws_vpc" "shared" {
 
 module "s3-bucket" {
   count  = var.existing_bucket_name == "" && var.access_logs ? 1 : 0
-  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=474f27a3f9bf542a8826c76fb049cc84b5cf136f" #v8.2.1
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=bf97d1f182936e9bfab0fb61baad2ba327ac36d3" # v8.2.2
   providers = {
     aws.bucket-replication = aws.bucket-replication
   }
-  bucket_prefix       = "${var.application_name}-lb-access-logs"
-  bucket_policy       = [data.aws_iam_policy_document.bucket_policy[0].json]
-  replication_enabled = false
-  versioning_enabled  = var.s3_versioning
-  force_destroy       = var.force_destroy_bucket
-  sse_algorithm       = var.load_balancer_type == "network" ? "AES256" : "aws:kms"
-  lifecycle_rule      = var.access_logs_lifecycle_rule
+  bucket_prefix        = "${var.application_name}-lb-access-logs"
+  bucket_policy        = [data.aws_iam_policy_document.bucket_policy[0].json]
+  replication_enabled  = false
+  versioning_enabled   = var.s3_versioning
+  force_destroy        = var.force_destroy_bucket
+  sse_algorithm        = var.load_balancer_type == "network" ? "AES256" : "aws:kms"
+  lifecycle_rule       = var.access_logs_lifecycle_rule
+  notification_enabled = length(var.s3_notification_queues) != 0
+  notification_queues  = var.s3_notification_queues
 
   tags = merge(
     var.tags,

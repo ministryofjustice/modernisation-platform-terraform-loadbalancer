@@ -24,5 +24,8 @@ output "load_balancer_dns_name" {
 
 output "load_balancer_zone_id" {
   value = aws_lb.loadbalancer.zone_id
+}
 
+output "s3_bucket" {
+  value = module.s3-bucket
 }
