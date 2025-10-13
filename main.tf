@@ -489,10 +489,6 @@ resource "aws_glue_catalog_table" "application_lb_logs" {
       name = "classification_reason"
       type = "string"
     }
-    columns {
-      name = "conn_trace_id"
-      type = "string"
-    }
   }
 }
 
