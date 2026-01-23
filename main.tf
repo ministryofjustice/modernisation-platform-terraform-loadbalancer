@@ -643,7 +643,7 @@ resource "aws_cloudwatch_metric_alarm" "this" {
   datapoints_to_alarm = each.value.datapoints_to_alarm
   treat_missing_data  = each.value.treat_missing_data
   dimensions = merge(each.value.dimensions, {
-    LoadBalancer = aws_lb.loadbalancer.arn
+    LoadBalancer = aws_lb.loadbalancer.arn_suffix
   })
   tags = merge(var.tags, {
     Name = "${var.application_name}-lb-${each.key}"
