@@ -216,3 +216,24 @@ variable "drop_invalid_header_fields" {
   description = "Whether HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false)."
   default     = true
 }
+
+variable "cloudwatch_metric_alarms" {
+  description = "Map of cloudwatch metric alarms.  The alarm name is set to the load balancer name plus the map key."
+  type = map(object({
+    comparison_operator = string
+    evaluation_periods  = number
+    metric_name         = string
+    namespace           = string
+    period              = number
+    statistic           = string
+    threshold           = number
+    alarm_actions       = list(string)
+    ok_actions          = optional(list(string), [])
+    actions_enabled     = optional(bool, false)
+    alarm_description   = optional(string)
+    datapoints_to_alarm = optional(number)
+    treat_missing_data  = optional(string, "missing")
+    dimensions          = optional(map(string), {})
+  }))
+  default = {}
+}
