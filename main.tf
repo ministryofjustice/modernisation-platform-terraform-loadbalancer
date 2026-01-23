@@ -645,7 +645,7 @@ resource "aws_cloudwatch_metric_alarm" "this" {
   dimensions = merge(each.value.dimensions, {
     LoadBalancer = aws_lb.loadbalancer.arn
   })
-  tags = merge(local.tags, {
+  tags = merge(var.tags, {
     Name = "${var.application_name}-lb-${each.key}"
   })
 }
