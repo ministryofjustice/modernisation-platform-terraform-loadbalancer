@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 0
 
       - name: ⛓️ SLSA Supply Chain Security
-        uses: ministryofjustice/devsecops-actions/sca/slsa@14d4861090d3ca99498480e909b1e9bccb25c2e4 # main
+        uses: ministryofjustice/devsecops-actions/sca/slsa@312fd623418b46cb7799444a6748775370e3c60c # main
 
       - name: Run Analysis
         uses: ministryofjustice/modernisation-platform-github-actions/terraform-static-analysis@5b44b387694dfa249cfa2dcf289ca871abe9e3e2 # v5.0.1
@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 0
 
       - name: ⛓️ SLSA Supply Chain Security
-        uses: ministryofjustice/devsecops-actions/sca/slsa@14d4861090d3ca99498480e909b1e9bccb25c2e4 # main
+        uses: ministryofjustice/devsecops-actions/sca/slsa@312fd623418b46cb7799444a6748775370e3c60c # main
 
       - name: Run Analysis
         uses: ministryofjustice/modernisation-platform-github-actions/terraform-static-analysis@5b44b387694dfa249cfa2dcf289ca871abe9e3e2 # v5.0.1
