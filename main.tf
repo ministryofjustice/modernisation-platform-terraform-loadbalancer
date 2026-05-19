@@ -33,6 +33,24 @@ module "s3-bucket" {
 data "aws_iam_policy_document" "bucket_policy" {
   count = var.access_logs ? 1 : 0
   statement {
+    sid     = "EnforceTLSv12orHigher"
+    effect  = "Deny"
+    actions = ["s3:*"]
+    resources = [
+      module.s3-bucket[0].bucket.arn,
+      "${module.s3-bucket[0].bucket.arn}/*"
+    ]
+    principals {
+      identifiers = ["*"]
+      type        = "AWS"
+    }
+    condition {
+      test     = "NumericLessThan"
+      variable = "s3:TlsVersion"
+      values   = [1.2]
+    }
+  }
+  statement {
     effect = "Allow"
     actions = [
       "s3:PutObject"
