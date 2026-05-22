@@ -33,6 +33,24 @@ module "s3-bucket" {
 data "aws_iam_policy_document" "bucket_policy" {
   count = var.access_logs ? 1 : 0
   statement {
+    sid     = "EnforceTLSv12orHigher"
+    effect  = "Deny"
+    actions = ["s3:*"]
+    resources = [
+      module.s3-bucket[0].bucket.arn,
+      "${module.s3-bucket[0].bucket.arn}/*"
+    ]
+    principals {
+      identifiers = ["*"]
+      type        = "AWS"
+    }
+    condition {
+      test     = "NumericLessThan"
+      variable = "s3:TlsVersion"
+      values   = [1.2]
+    }
+  }
+  statement {
     effect = "Allow"
     actions = [
       "s3:PutObject"
@@ -269,6 +287,10 @@ resource "aws_iam_role" "glue" {
   count              = var.access_logs ? 1 : 0
   name               = "glue-${var.application_name}"
   assume_role_policy = data.aws_iam_policy_document.glue_assume[count.index].json
+
+  tags = merge(var.tags, {
+    Name = "glue-${var.application_name}"
+  })
 }
 
 data "aws_iam_policy_document" "glue_assume" {
@@ -309,6 +331,10 @@ resource "aws_iam_policy" "glue_s3" {
   count  = var.access_logs && length(data.aws_iam_policy_document.glue_s3) > 0 ? 1 : 0
   name   = "glue-s3-${var.application_name}"
   policy = data.aws_iam_policy_document.glue_s3[count.index].json
+
+  tags = merge(var.tags, {
+    Name = "glue-s3-${var.application_name}"
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "glue_s3" {
