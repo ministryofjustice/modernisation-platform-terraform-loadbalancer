@@ -51,6 +51,8 @@ The use of "aws_glue_catalog_table" resources for application and network loadba
 
 By default the loadbalancer will set up an access_logs bucket for you, unless you set access_logs = false initially for testing or some other reason. Setting this back to true after the lb has been deployed will then create the bucket for you. The reason for the 'depends_on' here is that without the module.s3-bucket resource being created first, the module.lb resource will fail with a validation error.
 
+> Note: From `modernisation-platform-terraform-s3-bucket` version `v10.1.0`, the default bucket encryption is `aws:kms` and SSE-KMS request-header enforcement is enabled for IAM principals. This load balancer module explicitly sets `sse_algorithm = "AES256"` for access-logs bucket compatibility where uploaders do not send SSE-KMS headers.
+
 ```hcl
   depends_on = [
     module.s3-bucket
@@ -123,7 +125,6 @@ If you want to see exactly what policies are needed for each then refer to [NLB 
 ## Network Loadbalancer caveats
 
 - Access logs are created only if the load balancer has a TLS listener and they contain information only about TLS requests.
-- Network loadbalancers only support SSE-S3 encryption for access logs, not aws:kms (AWS managed keys).
 - They can support customer managed keys but this is not currently supported by this module.
 - No "verify bucket permissions" test file is created in the relevant bucket, only that the terraform apply step will fail with a validation error if the permissions and the bucket encryption parameters are not correct.
 
@@ -177,7 +178,7 @@ module "lb-access-logs-enabled" {
 
 | Name                                                           | Source                                                                  | Version |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------- | ------- |
-| <a name="module_s3-bucket"></a> [s3-bucket](#module_s3-bucket) | github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket | v9.0.0  |
+| <a name="module_s3-bucket"></a> [s3-bucket](#module_s3-bucket) | github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket | v10.1.0 |
 
 ## Resources
 
@@ -243,7 +244,7 @@ If you're looking to raise an issue with this module, please create a new issue 
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_s3-bucket"></a> [s3-bucket](#module\_s3-bucket) | github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket | 9facf9fc8f8b8e3f93ffbda822028534b9a75399 |
+| <a name="module_s3-bucket"></a> [s3-bucket](#module\_s3-bucket) | github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket | v10.1.0 |
 
 ## Resources
 
