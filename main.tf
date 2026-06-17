@@ -8,16 +8,16 @@ data "aws_vpc" "shared" {
 
 module "s3-bucket" {
   count  = var.existing_bucket_name == "" && var.access_logs ? 1 : 0
-  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=9facf9fc8f8b8e3f93ffbda822028534b9a75399" # v9.0.0
+  source = "github.com/ministryofjustice/modernisation-platform-terraform-s3-bucket?ref=76321e50b20f5c0d918cd45bdcf0b62049f5baf1" # v10.1.0
   providers = {
     aws.bucket-replication = aws.bucket-replication
   }
+  sse_algorithm        = "AES256"
   bucket_prefix        = "${var.application_name}-lb-access-logs"
   bucket_policy        = [data.aws_iam_policy_document.bucket_policy[0].json]
   replication_enabled  = false
   versioning_enabled   = var.s3_versioning
   force_destroy        = var.force_destroy_bucket
-  sse_algorithm        = var.load_balancer_type == "network" ? "AES256" : "aws:kms"
   lifecycle_rule       = var.access_logs_lifecycle_rule
   notification_enabled = length(var.s3_notification_queues) != 0
   notification_queues  = var.s3_notification_queues
