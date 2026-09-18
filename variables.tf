@@ -213,6 +213,7 @@ variable "access_logs_lifecycle_rule" {
 
 # set to false for SAP BIP, see https://me.sap.com/notes/0003348935
 variable "drop_invalid_header_fields" {
+  type        = bool
   description = "Whether HTTP headers with header fields that are not valid are removed by the load balancer (true) or routed to targets (false)."
   default     = true
 }
